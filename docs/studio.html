@@ -226,9 +226,14 @@ function buildRig(container){
     groups.props[name]=g;}
   return groups;
 }
+// Irises are clamped inside the eye whites (ellipse rx 9, ry 11 at (±12,-30), iris r 2.8) so they never poke out.
+const EYE={ax:5.2,ay:7.2,cy:-30};
+function clampIris(id,j,p){const cx=id==='lIris'?-12:12;let dx=j.px+p.x-cx,dy=j.py+p.y-EYE.cy;const k=Math.hypot(dx/EYE.ax,dy/EYE.ay);
+  if(k<=1)return p;dx/=k;dy/=k;return {x:cx+dx-j.px,y:EYE.cy+dy-j.py,r:p.r};}
 function applyPose(groups,pose){
   for(const id of ORDER){const j=R[id];let p=pose[id]||{x:0,y:0,r:0};
     if(id==='top'){const m=MOUTH[pose.mouth||0];p={x:m[0],y:m[1],r:m[2]};}
+    if(id==='lIris'||id==='rIris')p=clampIris(id,j,p);
     groups[id].setAttribute('transform',`translate(${j.px+p.x},${j.py+p.y}) rotate(${p.r})`);}
   const marks=pose.eyes>=2;
   groups.lids.style.display=pose.eyes===1?'':'none';

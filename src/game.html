@@ -205,9 +205,9 @@ const ANIMALS={   // cutout animals facing right, origin = feet on the ground
 function drawAnimal(kind){const g=el('g');const legs=el('g');for(const x of[-26,-12,14,28])legs.append(el('rect',{x:x-4,y:-16,width:8,height:16,rx:3,fill:'#2b2622'}));g.append(legs);ANIMALS[kind].draw(g);g.legs=legs;return g;}
 async function animalCameo(){const kind=rnd(Object.keys(ANIMALS)),fx=$('fx'),a=drawAnimal(kind);fx.append(a);
   player.play(lib.bonus_animal,{loop:true});   // Terrance keeps reacting for as long as the animal is on screen
-  const at=(x,extra='')=>`translate(${x}px,470px) ${extra}`;
+  const at=(x,extra='')=>`translate(${x}px,470px) scale(1.3) ${extra}`;   // animals drawn at 1x, shown a notch bigger
   if(Math.random()<0.4){  // peek: head pokes in from the left edge
-    a.setAttribute('transform','translate(-90,470)');await a.animate([{transform:at(-90)},{transform:at(-20)}],{duration:350,easing:'steps(3)',fill:'forwards'}).finished;
+    a.setAttribute('transform','translate(-90,470) scale(1.3)');await a.animate([{transform:at(-90)},{transform:at(-20)}],{duration:350,easing:'steps(3)',fill:'forwards'}).finished;
     SFX.play(ANIMALS[kind].sound);await wait(300);await a.animate([{transform:at(-20,'rotate(0)')},{transform:at(-20,'rotate(-8deg)')},{transform:at(-20,'rotate(8deg)')},{transform:at(-20,'rotate(0)')}],{duration:500,easing:'steps(4)'}).finished;
     await wait(400);await a.animate([{transform:at(-20)},{transform:at(-90)}],{duration:300,easing:'steps(3)',fill:'forwards'}).finished;
   }else{               // walk across, drop one in the middle, walk off
