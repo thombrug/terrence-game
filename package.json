@@ -1,0 +1,12 @@
+{
+  "name": "terrance-game",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "voice": "node tools/build-voice.js",
+    "build": "node tools/build.js",
+    "serve": "npx --yes serve docs",
+    "sfx": "node tools/build-sfx.js",
+    "voice-test": "node tools/voice-test.js"
+  }
+}

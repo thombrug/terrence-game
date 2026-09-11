@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Terrance leert letters</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#7fb4e6">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root{--ink:#2b2622;--red:#c8322b;--paper:#e9e2d0}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#7fb4e6;font:16px Georgia,serif;color:var(--ink);overflow:hidden;-webkit-user-select:none;user-select:none}
+  #wrap{height:100%;display:flex;align-items:center;justify-content:center}
+  svg{display:block;max-height:100vh;max-width:100vw;touch-action:manipulation}
+  .bubble{cursor:pointer}
+  .bubble circle{fill:url(#bg);stroke:var(--ink);stroke-width:4;filter:url(#shadow)}
+  .bubble text{font:900 62px 'Arial Rounded MT Bold','Helvetica Rounded','Nunito',Arial,sans-serif;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .bubble text.word{font-size:30px}
+  #target text{font:900 96px 'Arial Rounded MT Bold','Helvetica Rounded','Nunito',Arial,sans-serif;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+  #target text.word{font-size:56px}
+  #overlay{position:fixed;inset:0;background:rgba(43,38,34,.55);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  #overlay button{font:bold 34px Georgia,serif;padding:22px 44px;border:4px solid var(--ink);border-radius:14px;background:#ffd400;box-shadow:6px 6px 0 var(--ink);cursor:pointer}
+  #gear{position:fixed;top:8px;right:8px;width:40px;height:40px;border:2px solid var(--ink);border-radius:8px;background:#fff;font-size:22px;cursor:pointer;opacity:.7}
+  #settings{position:fixed;inset:0;background:var(--paper);padding:16px;overflow:auto;display:none;flex-direction:column;gap:10px}
+  #settings h2{margin:0}
+  #settings input,#settings textarea,#settings select{font:inherit;padding:8px;border:2px solid var(--ink);border-radius:5px;width:100%}
+  #settings textarea{height:90px;font:12px monospace}
+  #settings button{font:inherit;padding:10px 14px;border:2px solid var(--ink);border-radius:5px;background:#fff;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+  #settings .primary{background:var(--red);color:#fff}
+  .hint{font-size:13px;opacity:.7;margin:0}
+</style>
+</head>
+<body>
+<div id="wrap">
+<svg id="svg" viewBox="0 0 360 520" xmlns="http://www.w3.org/2000/svg">
+  <rect width="360" height="520" fill="#7fb4e6"/>
+  <ellipse cx="60" cy="120" rx="40" ry="16" fill="#fff" opacity=".5"/><ellipse cx="300" cy="80" rx="46" ry="18" fill="#fff" opacity=".5"/>
+  <rect x="0" y="470" width="360" height="50" fill="#5ea24a"/><rect x="0" y="466" width="360" height="8" fill="#3f7a33"/>
+  <defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="0" flood-color="#2b2622" flood-opacity=".9"/></filter><radialGradient id="bg" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffe680"/></radialGradient></defs>
+  <g id="target"><g id="cloud"></g><text x="176" y="30"></text><g id="dots"></g></g>
+  <g id="rig" transform="translate(-60,50) scale(1.55)"></g>
+  <g id="fx"></g>
+  <g id="bubbles"></g>
+</svg>
+</div>
+<button id="gear" title="Instellingen">⚙</button>
+<div id="overlay"><button id="btnStart">Spelen!</button></div>
+<div id="settings">
+  <h2>Instellingen</h2>
+  <label>Namen (komma's ertussen)<input id="setNames" placeholder="Mama, Papa, Noor"></label>
+  <label>Taal van de stem<select id="setLang"><option value="nl-NL">Nederlands</option><option value="en-GB">English</option><option value="de-DE">Deutsch</option></select></label>
+  <h2>Stem (ElevenLabs, optioneel)</h2>
+  <label>API key<input id="setKey" type="password" placeholder="xi-..."></label>
+  <label>Voice ID<input id="setVoice" placeholder="bijv. 21m00Tcm4TlvDq8ikWAM"></label>
+  <label>Gekke stem <input id="setRate" type="range" min="0.9" max="1.6" step="0.05"> <span id="rateVal"></span></label>
+  <p class="hint">Zonder key gebruikt het spel de stem van de telefoon. Geluiden: zet mp3's in een map <code>sounds/</code> naast dit bestand (fart, bigfart, boing, thud, slip, whistle, splat, sneeze, ding, pop, spin). Stemclips kunnen ook als bestand: <code>voice/nl/mama.mp3</code>, <code>voice/nl/a.mp3</code>, <code>voice/nl/ja_goed_zo.mp3</code> …</p>
+  <label>Animaties (plak animations.json)<textarea id="setJson"></textarea></label>
+  <input type="file" id="setFile" accept=".json,application/json">
+  <p class="hint" id="animInfo"></p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="primary" id="setSave">Opslaan en spelen</button>
+    <button id="setDefaults">Standaard animaties</button>
+  </div>
+</div>
+
+<script>
+__ASSETS__
+</script>
+<script>
+__RIG__
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const svg=$('svg');
+const doll=createDoll($('rig'));
+const player=makePlayer(doll);
+let lib=makeDefaultLib();if(window.CUSTOM_ANIMS)lib={...lib,...window.CUSTOM_ANIMS};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const pick=(prefix)=>{const ks=Object.keys(lib).filter(k=>k.startsWith(prefix));return lib[rnd(ks)];};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const playAsync=(anim,o={})=>new Promise(r=>player.play(anim,{...o,done:r}));
+const speakAsync=(t)=>new Promise(r=>speak(t,doll,{lang:cfg.lang,done:r}));
+
+// ---------- settings ----------
+let cfg=Object.assign({names:['Mama','Papa'],lang:'nl-NL',key:'',voiceId:'',rate:1.05},window.DEFAULT_CFG||{});
+function applyVoice(){VOICE.cfg.key=cfg.key;VOICE.cfg.voiceId=cfg.voiceId;VOICE.cfg.rate=cfg.rate;}
+try{const s=localStorage.getItem('cutout-game');if(s)Object.assign(cfg,JSON.parse(s));applyVoice();const a=localStorage.getItem('cutout-anims');if(a)lib={...lib,...JSON.parse(a)};}catch(e){}
+function saveCfg(){try{localStorage.setItem('cutout-game',JSON.stringify(cfg));}catch(e){}}
+$('gear').onclick=()=>{state='paused';player.stop();$('setNames').value=cfg.names.join(', ');$('setLang').value=cfg.lang;$('setKey').value=cfg.key;$('setVoice').value=cfg.voiceId;$('setRate').value=cfg.rate;$('rateVal').textContent=cfg.rate+'×';$('animInfo').textContent=Object.keys(lib).length+' animaties geladen';$('settings').style.display='flex';};
+$('setFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>$('setJson').value=t);};
+$('setSave').onclick=()=>{cfg.names=$('setNames').value.split(',').map(s=>s.trim()).filter(Boolean);if(!cfg.names.length)cfg.names=['Mama','Papa'];cfg.lang=$('setLang').value;cfg.key=$('setKey').value.trim();cfg.voiceId=$('setVoice').value.trim();cfg.rate=+$('setRate').value;applyVoice();VOICE.cache={};saveCfg();
+  const t=$('setJson').value.trim();if(t){try{const d=JSON.parse(t);lib={...lib,...(d.animations||d)};try{localStorage.setItem('cutout-anims',JSON.stringify(d.animations||d));}catch(e){}}catch(e){alert('Dat is geen geldige JSON.');return;}}
+  $('settings').style.display='none';round=0;score=0;nextRound();};
+$('setRate').oninput=e=>$('rateVal').textContent=e.target.value+'×';
+$('setDefaults').onclick=()=>{lib=makeDefaultLib();try{localStorage.removeItem('cutout-anims');}catch(e){}$('setJson').value='';$('animInfo').textContent='Standaard animaties hersteld';};
+
+// ---------- items ----------
+function letters(){const s=new Set();cfg.names.forEach(n=>[...n.toUpperCase()].forEach(c=>/[A-Z]/.test(c)&&s.add(c)));return[...s];}
+const ALPHA=[...'ABCDEFGHIJKLMNOPRSTUVW'];
+function makeItem(kind){
+  if(kind==='number'){const n=1+Math.floor(Math.random()*5);let d;do{d=1+Math.floor(Math.random()*5);}while(d===n);return{kind,text:String(n),n,distract:String(d)};}
+  if(kind==='word'){const nm=rnd(cfg.names),w=nm.toUpperCase();let d=rnd(cfg.names).toUpperCase();if(d===w)d=rnd(['OMA','OPA','BAL','KAT','HOND'].filter(x=>x!==w));return{kind,text:w,say:nm,distract:d};}
+  const L=letters();const t=rnd(L);let d;do{d=rnd(ALPHA);}while(d===t);return{kind:'letter',text:t,distract:d};
+}
+const KINDS=['letter','letter','number','letter','word'];
+
+// ---------- stage ----------
+function drawCloud(w){const c=$('cloud');c.innerHTML='';const cx=176,cy=34,h=44;const g=el('g',{filter:'url(#shadow)'});
+  const puffs=[];for(let x=cx-w/2+20;x<=cx+w/2-20;x+=30)puffs.push([x,cy-8,26+Math.random()*6]);
+  puffs.push([cx-w/2+14,cy+8,22],[cx+w/2-14,cy+8,22]);
+  const outline=el('g');puffs.forEach(([x,y,r])=>outline.append(el('circle',{cx:x,cy:y,r:r+3,fill:'#2b2622'})));
+  outline.append(el('rect',{x:cx-w/2,y:cy-12,width:w,height:h+8,rx:20,fill:'#2b2622'}));g.append(outline);
+  puffs.forEach(([x,y,r])=>g.append(el('circle',{cx:x,cy:y,r,fill:'#fff'})));g.append(el('rect',{x:cx-w/2+3,y:cy-9,width:w-6,height:h+2,rx:18,fill:'#fff'}));c.append(g);}
+function showTarget(it){const t=$('target').querySelector('text');t.textContent=it.text;t.setAttribute('class',it.kind==='word'?'word':'');
+  const bw=t.getBBox().width;drawCloud(Math.min(340,Math.max(170,bw+90)));
+  const dots=$('dots');dots.innerHTML='';if(it.kind==='number')for(let i=0;i<it.n;i++)dots.append(el('circle',{cx:176-(it.n-1)*13+i*26,cy:64,r:9,fill:'#c8322b',stroke:'#2b2622','stroke-width':2.5}));}
+function showBubbles(it){const B=$('bubbles');B.innerHTML='';const opts=Math.random()<.5?[it.text,it.distract]:[it.distract,it.text];
+  opts.forEach((txt,i)=>{const g=el('g',{class:'bubble',transform:`translate(290,${290+i*130})`});g.append(el('circle',{r:52}));
+    const t=el('text',{class:it.kind==='word'?'word':''});t.textContent=txt;g.append(t);g.dataset.ok=txt===it.text?'1':'';
+    g.addEventListener('pointerdown',()=>onTap(g,it));B.append(g);
+    g.animate([{transform:`translate(290px,${290+i*130}px) scale(0)`},{transform:`translate(290px,${290+i*130}px) scale(1)`}],{duration:250,easing:'ease-out'});});
+  SFX.play('pop');}
+function hideBubbles(){$('bubbles').innerHTML='';}
+function stars(){const fx=$('fx');for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2,d=90+Math.random()*80;
+  const s=el('path',{d:'M0,-10 L3,-3 L10,-3 L4,2 L6,9 L0,5 L-6,9 L-4,2 L-10,-3 L-3,-3 Z',fill:rnd(['#ffd400','#ff7a00','#fff','#c8322b']),stroke:'#2b2622','stroke-width':1.5});
+  fx.append(s);s.animate([{transform:'translate(126px,300px) scale(.3)',opacity:1},{transform:`translate(${126+Math.cos(a)*d}px,${300+Math.sin(a)*d}px) rotate(${Math.random()*360}deg) scale(1.2)`,opacity:0}],{duration:900,easing:'ease-out'}).onfinish=()=>s.remove();}}
+async function birdPoop(){const fx=$('fx');const bird=el('path',{d:'M-14,0 Q-7,-10 0,0 Q7,-10 14,0',fill:'none',stroke:'#2b2622','stroke-width':3,'stroke-linecap':'round'});fx.append(bird);
+  const flight=bird.animate([{transform:'translate(-30px,40px)'},{transform:'translate(400px,30px)'}],{duration:3000,easing:'linear'});
+  await wait(1100);const blob=el('ellipse',{rx:8,ry:6,fill:'#fff',stroke:'#2b2622','stroke-width':2});fx.append(blob);
+  const drop=playAsync(lib.bonus_poop);
+  blob.animate([{transform:'translate(150px,40px)'},{transform:'translate(126px,178px)'}],{duration:700,easing:'ease-in'}).onfinish=()=>{blob.remove();
+    const sp=el('path',{d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2,transform:'translate(126,180)'});fx.append(sp);setTimeout(()=>sp.remove(),2600);};
+  await drop;flight.onfinish=()=>bird.remove();}
+
+// ---------- game flow ----------
+let state='idle',round=0,score=0,item=null,idleT=null;
+const PRAISE=PHRASES.praise,OOPS=PHRASES.oops,NUMWORDS=PHRASES.numbers;
+function sayItem(it){if(it.kind==='number')return NUMWORDS[cfg.lang][it.n-1];return it.say||it.text;}
+async function sayTarget(){doll.set(lib.speak_point.frames[0].pose);await speakAsync(sayItem(item));doll.set(defaultPose());}
+function scheduleIdle(){clearTimeout(idleT);idleT=setTimeout(async()=>{if(state!=='waiting')return;state='idling';await playAsync(pick('idle_'));if(state==='idling')state='waiting';scheduleIdle();},2500+Math.random()*3500);}
+async function nextRound(){state='busy';hideBubbles();item=makeItem(KINDS[round%KINDS.length]);round++;showTarget(item);await wait(300);await sayTarget();showBubbles(item);state='waiting';scheduleIdle();}
+async function onTap(g,it){if(state!=='waiting'&&state!=='idling')return;clearTimeout(idleT);player.stop();state='busy';
+  if(g.dataset.ok){score++;hideBubbles();stars();
+    if(it.kind==='number'){for(let i=1;i<=it.n;i++){await playAsync(lib.count_hop);await speakAsync(NUMWORDS[cfg.lang][i-1]);}}
+    const roll=Math.random();
+    if(roll<0.15)await birdPoop();else if(roll<0.3)await playAsync(pick('cheer_'));else await playAsync(pick('slap_'));
+    await speakAsync(rnd(PRAISE[cfg.lang]));
+    await wait(400);nextRound();
+  }else{
+    {const tf=g.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');g.animate([{transform:tf+' rotate(0)'},{transform:tf+' rotate(-12)'},{transform:tf+' rotate(12)'},{transform:tf+' rotate(0)'}],{duration:400});}
+    await playAsync(pick('mild_'));await speakAsync(rnd(OOPS[cfg.lang]));
+    const ok=[...document.querySelectorAll('.bubble')].find(b=>b.dataset.ok);
+    if(ok){const tf=ok.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');ok.animate([{transform:tf+' scale(1)'},{transform:tf+' scale(1.15)'},{transform:tf+' scale(1)'}],{duration:500,iterations:3});}
+    await sayTarget();state='waiting';scheduleIdle();
+  }}
+$('btnStart').onclick=()=>{SFX.unlock();if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(''));}
+  $('overlay').style.display='none';nextRound();};
+doll.set(defaultPose());
+</script>
+</body>
+</html>

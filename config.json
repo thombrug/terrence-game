@@ -1,0 +1,22 @@
+{
+  "names": [
+    "Mama",
+    "Papa",
+    "Liam",
+    "Noa",
+    "Thomas",
+    "Nikki"
+  ],
+  "lang": "nl-NL",
+  "elevenlabs": {
+    "voiceId": "eYHBv5UimwSxHD1FvZDU",
+    "model": "eleven_v3",
+    "stability": 0.35,
+    "similarity": 0.7,
+    "style": 0.6,
+    "letters": {
+      "suffix": "."
+    },
+    "languageCode": "nl"
+  }
+}
