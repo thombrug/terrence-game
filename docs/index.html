@@ -240,7 +240,7 @@ const SFX=(()=>{
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};
   // A sound can have variants: fart.mp3, fart_1.mp3, fart_2.mp3 ... one is picked at random each play.
-  function variants(n){const b=baked();const re=new RegExp('^'+n+'(_\d+)?$');const v=Object.keys(b).filter(k=>re.test(k));return v.length?v:[n];}
+  function variants(n){const b=baked();const re=new RegExp('^'+n+'(_\\d+)?$');const v=Object.keys(b).filter(k=>re.test(k));return v.length?v:[n];}
   function play(n){if(!S[n])return;const vs=variants(n);const k=vs[Math.floor(Math.random()*vs.length)];
     if(files[k]===undefined&&baked()[k]){files[k]=new Audio(baked()[k]);}const f=files[k];
     if(f===false){try{S[n]();}catch(e){}return;}
