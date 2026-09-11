@@ -98,6 +98,7 @@ const speakAsync=(t)=>new Promise(r=>speak(t,doll,{lang:cfg.lang,done:r}));
 let cfg=Object.assign({names:['Mama','Papa'],lang:'nl-NL',key:'',voiceId:'',rate:1.05},window.DEFAULT_CFG||{});
 function applyVoice(){VOICE.cfg.key=cfg.key;VOICE.cfg.voiceId=cfg.voiceId;VOICE.cfg.rate=cfg.rate;}
 try{const s=localStorage.getItem('cutout-game');if(s)Object.assign(cfg,JSON.parse(s));applyVoice();const a=localStorage.getItem('cutout-anims');if(a)lib={...lib,...JSON.parse(a)};}catch(e){}
+delete lib.slap_party;   // renamed to dance_party; drop it from any older animations.json that was pasted into the settings
 function saveCfg(){try{localStorage.setItem('cutout-game',JSON.stringify(cfg));}catch(e){}}
 $('gear').onclick=()=>{state='paused';player.stop();$('setNames').value=cfg.names.join(', ');$('setLang').value=cfg.lang;$('setKey').value=cfg.key;$('setVoice').value=cfg.voiceId;$('setRate').value=cfg.rate;$('rateVal').textContent=cfg.rate+'×';$('animInfo').textContent=Object.keys(lib).length+' animaties geladen';$('settings').style.display='flex';};
 $('setFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>$('setJson').value=t);};
