@@ -375,6 +375,34 @@ function makeDefaultLib(){
     // poke on the head: dazed, stars circle the head, eyes squeezed
     tap_head:A(8,[F(1,{head:{y:4},mouth:1},'bonk','headstars'),F(3,{head:{r:-14},mouth:1,eyes:2}),F(3,{head:{r:12},mouth:1,eyes:2}),F(3,{head:{r:-8},mouth:2,eyes:2}),
       F(2,{head:{r:0},mouth:0,eyes:0,lIris:{x:-5},rIris:{x:5}}),F(2,base)]),
+    // farm animal cameo: looks left at it, startled, then giggles (looped by the game while the animal is on screen)
+    bonus_animal:A(6,[F(4,{head:{r:-18},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(3,{head:{r:-22},mouth:4,eyes:0,lIris:{x:-6},rIris:{x:-6},root:{y:-6}}),
+      F(6,{head:{r:-12},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(5,{head:{r:6},mouth:3,eyes:2}),F(4,{head:{r:-6},mouth:2,eyes:2}),F(2,base)]),
+    // roman candles: arms out, hips sway, then one torch behind the bum, toot, flame jet
+    slap_sparklers:(()=>{const arms={lUpper:{r:-95},rUpper:{r:95},lLower:{r:0},rLower:{r:0},lHand:{r:95},rHand:{r:-95}};
+      const sway=d=>({...arms,root:{x:6*d},torso:{r:8*d},head:{r:-6*d},lThigh:{r:-8*d},rThigh:{r:-8*d},mouth:d>0?2:3});
+      const bum={root:{y:-6,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:26},rThigh:{r:22},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-100},lLower:{r:-20},lHand:{r:100},rUpper:{r:38},rLower:{r:0},rHand:{r:-128}};
+      return A(8,[F(1,{...arms,mouth:1},'sparkle','sparks'),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),
+        F(3,{...arms,mouth:1,eyes:0,lIris:{x:4},rIris:{x:4}}),F(3,{...bum,mouth:0,eyes:1}),
+        F(1,{...bum,mouth:4,eyes:2},'fart'),F(4,{...bum,mouth:4,eyes:2,hat:{y:-10,r:10}},'whoosh','flame'),F(3,{...bum,mouth:1,eyes:2}),
+        F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)],{props:['torchL','torchR']});})(),
+    // 10 s dances for every 10th correct answer (80 frames at 8 fps), music of the same length
+    dance_riverdance:seq(8,80,i=>{const ph=i%8,stiff={lUpper:{r:4},rUpper:{r:-4},lLower:{r:0},rLower:{r:0},mouth:0,eyes:0,lIris:{x:2},rIris:{x:-2}};
+      const bob={root:{y:i%2?-10:0}};
+      if(i>=64)return {...stiff,root:{y:i%2?-30:-6},lThigh:{r:-100+(i%2)*30},rThigh:{r:100-(i%2)*30},lShin:{r:90},rShin:{r:-90},head:{r:i%2?8:-8},mouth:4,sound:i%4===0?'boing':''};   // finale: both legs out, knees backwards
+      if(ph<2)return {...stiff,...bob,lThigh:{r:-120},lShin:{r:-70},lFoot:{r:40},rShin:{r:5}};        // left kick, knee bent the wrong way
+      if(ph<4)return {...stiff,...bob,lThigh:{r:20},lShin:{r:60},rThigh:{r:0}};                       // left leg back
+      if(ph<6)return {...stiff,...bob,rThigh:{r:120},rShin:{r:70},rFoot:{r:-40},lShin:{r:-5}};       // right kick
+      return {...stiff,root:{y:ph===7?-26:0},sound:ph===6?'thud':''};                                  // hop
+    },{music:'jig'}),
+    dance_disco:seq(8,80,i=>{const d=i%4<2?1:-1,ph=i%16,face={eyes:0,mouth:i%2?1:3,lIris:{x:2},rIris:{x:-2}};
+      const hips={root:{x:8*d,y:i%2?-4:0},torso:{r:-8*d},head:{r:6*d},lThigh:{r:-12*d},rThigh:{r:-12*d},lShin:{r:14*d},rShin:{r:14*d}};
+      const point={lUpper:{r:d>0?-170:-30},lLower:{r:0},rUpper:{r:d>0?30:170},rLower:{r:0},lHand:{r:d>0?0:-40}};   // Travolta: point up / point down
+      if(i===0)return {...face,...hips,...point,fx:'discoball'};
+      if(i>=72)return {...face,root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-170},rUpper:{r:20},lLower:{r:0},rLower:{r:60},mouth:4,eyes:i%2?2:0,sound:i===72?'plof':''};   // finale: splits
+      if(ph>=12)return {...face,...hips,head:{r:[0,90,180,-90][ph-12]},lUpper:{r:-160},rUpper:{r:160},lLower:{r:0},rLower:{r:0},sound:ph===12?'spin':''};   // headspin every 2 s
+      return {...face,...hips,...point};
+    },{music:'disco',props:['afro','shades','flareL','flareR','discoShirt']}),
     count_hop:A(8,[F(1,crouch),F(2,{root:{y:-35},rUpper:{r:-170},rLower:{r:0},mouth:1},'boing'),F(1,{root:{y:-10},rUpper:{r:-170},rLower:{r:0}}),F(1,{...crouch,rUpper:{r:-170},rLower:{r:0}})]),
   };
 }
@@ -469,6 +497,60 @@ FX.headstars=()=>{const fx=$('fx'),g=el('g');fx.append(g);const stars=[];
     const h=jointXY('head',0,-40);stars.forEach((s,i)=>{const a=e/250+i*Math.PI*2/5;const y=Math.sin(a);
       s.setAttribute('transform',`translate(${h.x+Math.cos(a)*46},${h.y+y*12}) scale(${0.7+0.3*y})`);});requestAnimationFrame(step);})(t0);};
 
+FX.sparks=()=>{const fx=$('fx'),t0=performance.now();(function step(t){if(t-t0>2600)return;
+  for(const hand of['lHand','rHand']){const p=jointXY(hand,0,-38);for(let i=0;i<2;i++){const s=el('circle',{r:2+Math.random()*2,fill:rnd(['#ffd400','#ff7a00','#fff'])});fx.append(s);
+    const a=Math.random()*Math.PI*2,d=25+Math.random()*30;
+    s.animate([{transform:`translate(${p.x}px,${p.y}px)`,opacity:1},{transform:`translate(${p.x+Math.cos(a)*d}px,${p.y+Math.sin(a)*d-10}px)`,opacity:0}],{duration:300+Math.random()*200}).onfinish=()=>s.remove();}}
+  requestAnimationFrame(step);})(t0);};
+FX.flame=()=>{const fx=$('fx'),p=jointXY('torso',-30,8);const g=el('g');
+  g.append(el('path',{d:'M0,-14 Q-60,-30 -130,0 Q-60,30 0,14 Z',fill:'#ff7a00',stroke:'#2b2622','stroke-width':2.5}));
+  g.append(el('path',{d:'M0,-7 Q-40,-14 -90,0 Q-40,14 0,7 Z',fill:'#ffd400'}));fx.append(g);
+  const at=sc=>`translate(${p.x}px,${p.y}px) rotate(${p.r}deg) ${sc}`;
+  g.animate([{transform:at('scale(0.2,0.6)')},{transform:at('scale(1.1,1)')},{transform:at('scale(1,0.9)')},{transform:at('scale(0.3,0.2)')}],{duration:550,easing:'steps(5)',fill:'forwards'}).onfinish=()=>g.remove();};
+FX.discoball=(k,anim)=>{const fx=$('fx'),g=el('g');g.append(el('line',{x1:0,y1:-140,x2:0,y2:-26,stroke:'#2b2622','stroke-width':2}));
+  const ball=el('g');ball.append(el('circle',{r:26,fill:'#dfe6ee',stroke:'#2b2622','stroke-width':2.5}));
+  for(let y=-20;y<=20;y+=10)ball.append(el('line',{x1:-26,y1:y,x2:26,y2:y,stroke:'#2b2622','stroke-width':1}));
+  for(let x=-20;x<=20;x+=10)ball.append(el('line',{x1:x,y1:-26,x2:x,y2:26,stroke:'#2b2622','stroke-width':1}));g.append(ball);
+  for(const c of['#ff3b3b','#3bff5c','#3b8bff','#ffe83b']){const spot=el('circle',{r:22,fill:c,opacity:0.35});g.append(spot);
+    spot.animate([{transform:`translate(${-120+Math.random()*240}px,${120+Math.random()*250}px)`},{transform:`translate(${-120+Math.random()*240}px,${120+Math.random()*250}px)`}],{duration:900+Math.random()*600,direction:'alternate',iterations:Infinity,easing:'steps(6)'});}
+  fx.append(g);
+  ball.animate([{transform:'scaleX(1)'},{transform:'scaleX(-1)'},{transform:'scaleX(1)'}],{duration:1200,iterations:Infinity,easing:'steps(8)'});
+  g.animate([{transform:'translate(280px,-60px)'},{transform:'translate(280px,110px)'}],{duration:600,easing:'steps(6)',fill:'forwards'});
+  setTimeout(()=>g.remove(),player.duration(anim));};
+
+// ---------- farm animal cameo ----------
+const ANIMALS={   // cutout animals facing right, origin = feet on the ground
+  cow:{sound:'moo',draw(g){g.append(el('rect',{x:-40,y:-52,width:80,height:40,rx:14,fill:'#fff',...OUT}));for(const [x,y,r] of[[-22,-40,9],[8,-28,11],[24,-44,7]])g.append(el('circle',{cx:x,cy:y,r,fill:'#2b2622'}));
+    g.append(el('rect',{x:30,y:-70,width:34,height:30,rx:10,fill:'#fff',...OUT}));g.append(el('rect',{x:44,y:-56,width:24,height:16,rx:6,fill:'#f4a7b9',...OUT}));
+    g.append(el('circle',{cx:50,cy:-62,r:2.5,fill:'#2b2622'}));g.append(el('path',{d:'M34,-70 l-6,-10 M58,-70 l6,-10',stroke:'#2b2622','stroke-width':3,'stroke-linecap':'round'}));}},
+  pig:{sound:'oink',draw(g){g.append(el('rect',{x:-36,y:-46,width:72,height:36,rx:16,fill:'#f4a7b9',...OUT}));g.append(el('circle',{cx:38,cy:-52,r:17,fill:'#f4a7b9',...OUT}));
+    g.append(el('ellipse',{cx:50,cy:-48,rx:8,ry:6,fill:'#e88aa0',...OUT}));g.append(el('circle',{cx:47,cy:-48,r:1.5,fill:'#2b2622'}));g.append(el('circle',{cx:53,cy:-48,r:1.5,fill:'#2b2622'}));
+    g.append(el('circle',{cx:40,cy:-58,r:2.5,fill:'#2b2622'}));g.append(el('path',{d:'M-36,-36 q-12,-6 -6,-14 q-8,2 -4,8',fill:'none',stroke:'#2b2622','stroke-width':3,'stroke-linecap':'round'}));}},
+  sheep:{sound:'baa',draw(g){for(const [x,y,r] of[[-30,-40,16],[-10,-48,18],[12,-46,17],[30,-38,15],[0,-32,18],[-22,-28,14],[22,-28,14]])g.append(el('circle',{cx:x,cy:y,r,fill:'#f4efe2',...OUT}));
+    g.append(el('ellipse',{cx:44,cy:-46,rx:14,ry:11,fill:'#2b2622',...OUT}));g.append(el('circle',{cx:48,cy:-49,r:2.5,fill:'#fff'}));}},
+};
+function drawAnimal(kind){const g=el('g');const legs=el('g');for(const x of[-26,-12,14,28])legs.append(el('rect',{x:x-4,y:-16,width:8,height:16,rx:3,fill:'#2b2622'}));g.append(legs);ANIMALS[kind].draw(g);g.legs=legs;return g;}
+async function animalCameo(){const kind=rnd(Object.keys(ANIMALS)),fx=$('fx'),a=drawAnimal(kind);fx.append(a);
+  player.play(lib.bonus_animal,{loop:true});   // Terrance keeps reacting for as long as the animal is on screen
+  const at=(x,extra='')=>`translate(${x}px,470px) ${extra}`;
+  if(Math.random()<0.4){  // peek: head pokes in from the left edge
+    a.setAttribute('transform','translate(-90,470)');await a.animate([{transform:at(-90)},{transform:at(-20)}],{duration:350,easing:'steps(3)',fill:'forwards'}).finished;
+    SFX.play(ANIMALS[kind].sound);await wait(300);await a.animate([{transform:at(-20,'rotate(0)')},{transform:at(-20,'rotate(-8deg)')},{transform:at(-20,'rotate(8deg)')},{transform:at(-20,'rotate(0)')}],{duration:500,easing:'steps(4)'}).finished;
+    await wait(400);await a.animate([{transform:at(-20)},{transform:at(-90)}],{duration:300,easing:'steps(3)',fill:'forwards'}).finished;
+  }else{               // walk across, drop one in the middle, walk off
+    const gait=a.legs.animate([{transform:'rotate(-12deg)'},{transform:'rotate(12deg)'},{transform:'rotate(-12deg)'}],{duration:400,iterations:Infinity,easing:'steps(4)'});
+    SFX.play(ANIMALS[kind].sound);
+    await a.animate([{transform:at(-100)},{transform:at(190)}],{duration:2600,easing:'steps(26)',fill:'forwards'}).finished;
+    gait.pause();await wait(500);SFX.play('fart');
+    const poo=el('path',{class:'stay',d:'M-16,0 Q-18,-8 -8,-8 Q-10,-16 0,-14 Q4,-22 8,-12 Q18,-12 14,-4 Q20,0 12,2 Z',fill:'#7a5230',stroke:'#2b2622','stroke-width':2,transform:'translate(150,474)'});
+    fx.insertBefore(poo,a);SFX.play('plof');await wait(700);SFX.play(ANIMALS[kind].sound);gait.play();
+    await a.animate([{transform:at(190)},{transform:at(480)}],{duration:2600,easing:'steps(26)',fill:'forwards'}).finished;
+  }
+  a.remove();player.stop();doll.set(defaultPose());}
+
+// ---------- dance party (every 10th correct answer) ----------
+async function danceParty(){const d=pick('dance_');stars();music.play(d.music);setTimeout(stars,600);await playAsync(d);music.stop();stars();await speakAsync(rnd(PRAISE[cfg.lang]));}
+
 // ---------- poking him ----------
 $('rig').addEventListener('pointerdown',e=>{const head=e.target.closest('.j_head, .j_top');poke(head?'head':'belly');});
 async function poke(kind){if(state!=='waiting'&&state!=='idling')return;clearTimeout(idleT);player.stop();state='idling';
@@ -480,14 +562,15 @@ const PRAISE=PHRASES.praise,OOPS=PHRASES.oops,NUMWORDS=PHRASES.numbers;
 function sayItem(it){if(it.kind==='number')return NUMWORDS[cfg.lang][it.n-1];return it.say||it.text;}
 async function sayTarget(){doll.set(lib.speak_point.frames[0].pose);await speakAsync(sayItem(item));doll.set(defaultPose());}
 function scheduleIdle(){clearTimeout(idleT);idleT=setTimeout(async()=>{if(state!=='waiting')return;state='idling';await playAsync(pick('idle_'));if(state==='idling')state='waiting';scheduleIdle();},2500+Math.random()*3500);}
-async function nextRound(){state='busy';hideBubbles();item=makeItem(KINDS[round%KINDS.length]);round++;showTarget(item);await wait(300);await sayTarget();showBubbles(item);state='waiting';scheduleIdle();}
+async function nextRound(){state='busy';hideBubbles();$('fx').querySelectorAll('.stay').forEach(e=>e.remove());item=makeItem(KINDS[round%KINDS.length]);round++;showTarget(item);await wait(300);await sayTarget();showBubbles(item);state='waiting';scheduleIdle();}
 let gen=0;
 async function onTap(g,it){if(state!=='waiting'&&state!=='idling')return;const my=++gen;clearTimeout(idleT);player.stop();stopSpeech();state='busy';
   if(g.dataset.ok){score++;hideBubbles();stars();
     if(it.kind==='number'){for(let i=1;i<=it.n;i++){await playAsync(lib.count_hop);await speakAsync(NUMWORDS[cfg.lang][i-1]);}}
     const roll=Math.random();
-    if(roll<0.15)await birdPoop();else if(roll<0.3)await playAsync(pick('cheer_'));else await playAsync(pick('slap_'));
+    if(roll<0.10)await birdPoop();else if(roll<0.20)await animalCameo();else if(roll<0.32)await playAsync(pick('cheer_'));else await playAsync(pick('slap_'));
     await speakAsync(rnd(PRAISE[cfg.lang]));
+    if(score%10===0)await danceParty();
     await wait(400);nextRound();
   }else{
     {const tf=g.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');g.animate([{transform:tf+' rotate(0)'},{transform:tf+' rotate(-12)'},{transform:tf+' rotate(12)'},{transform:tf+' rotate(0)'}],{duration:400});}

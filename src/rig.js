@@ -298,6 +298,34 @@ function makeDefaultLib(){
     // poke on the head: dazed, stars circle the head, eyes squeezed
     tap_head:A(8,[F(1,{head:{y:4},mouth:1},'bonk','headstars'),F(3,{head:{r:-14},mouth:1,eyes:2}),F(3,{head:{r:12},mouth:1,eyes:2}),F(3,{head:{r:-8},mouth:2,eyes:2}),
       F(2,{head:{r:0},mouth:0,eyes:0,lIris:{x:-5},rIris:{x:5}}),F(2,base)]),
+    // farm animal cameo: looks left at it, startled, then giggles (looped by the game while the animal is on screen)
+    bonus_animal:A(6,[F(4,{head:{r:-18},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(3,{head:{r:-22},mouth:4,eyes:0,lIris:{x:-6},rIris:{x:-6},root:{y:-6}}),
+      F(6,{head:{r:-12},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(5,{head:{r:6},mouth:3,eyes:2}),F(4,{head:{r:-6},mouth:2,eyes:2}),F(2,base)]),
+    // roman candles: arms out, hips sway, then one torch behind the bum, toot, flame jet
+    slap_sparklers:(()=>{const arms={lUpper:{r:-95},rUpper:{r:95},lLower:{r:0},rLower:{r:0},lHand:{r:95},rHand:{r:-95}};
+      const sway=d=>({...arms,root:{x:6*d},torso:{r:8*d},head:{r:-6*d},lThigh:{r:-8*d},rThigh:{r:-8*d},mouth:d>0?2:3});
+      const bum={root:{y:-6,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:26},rThigh:{r:22},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-100},lLower:{r:-20},lHand:{r:100},rUpper:{r:38},rLower:{r:0},rHand:{r:-128}};
+      return A(8,[F(1,{...arms,mouth:1},'sparkle','sparks'),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),
+        F(3,{...arms,mouth:1,eyes:0,lIris:{x:4},rIris:{x:4}}),F(3,{...bum,mouth:0,eyes:1}),
+        F(1,{...bum,mouth:4,eyes:2},'fart'),F(4,{...bum,mouth:4,eyes:2,hat:{y:-10,r:10}},'whoosh','flame'),F(3,{...bum,mouth:1,eyes:2}),
+        F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)],{props:['torchL','torchR']});})(),
+    // 10 s dances for every 10th correct answer (80 frames at 8 fps), music of the same length
+    dance_riverdance:seq(8,80,i=>{const ph=i%8,stiff={lUpper:{r:4},rUpper:{r:-4},lLower:{r:0},rLower:{r:0},mouth:0,eyes:0,lIris:{x:2},rIris:{x:-2}};
+      const bob={root:{y:i%2?-10:0}};
+      if(i>=64)return {...stiff,root:{y:i%2?-30:-6},lThigh:{r:-100+(i%2)*30},rThigh:{r:100-(i%2)*30},lShin:{r:90},rShin:{r:-90},head:{r:i%2?8:-8},mouth:4,sound:i%4===0?'boing':''};   // finale: both legs out, knees backwards
+      if(ph<2)return {...stiff,...bob,lThigh:{r:-120},lShin:{r:-70},lFoot:{r:40},rShin:{r:5}};        // left kick, knee bent the wrong way
+      if(ph<4)return {...stiff,...bob,lThigh:{r:20},lShin:{r:60},rThigh:{r:0}};                       // left leg back
+      if(ph<6)return {...stiff,...bob,rThigh:{r:120},rShin:{r:70},rFoot:{r:-40},lShin:{r:-5}};       // right kick
+      return {...stiff,root:{y:ph===7?-26:0},sound:ph===6?'thud':''};                                  // hop
+    },{music:'jig'}),
+    dance_disco:seq(8,80,i=>{const d=i%4<2?1:-1,ph=i%16,face={eyes:0,mouth:i%2?1:3,lIris:{x:2},rIris:{x:-2}};
+      const hips={root:{x:8*d,y:i%2?-4:0},torso:{r:-8*d},head:{r:6*d},lThigh:{r:-12*d},rThigh:{r:-12*d},lShin:{r:14*d},rShin:{r:14*d}};
+      const point={lUpper:{r:d>0?-170:-30},lLower:{r:0},rUpper:{r:d>0?30:170},rLower:{r:0},lHand:{r:d>0?0:-40}};   // Travolta: point up / point down
+      if(i===0)return {...face,...hips,...point,fx:'discoball'};
+      if(i>=72)return {...face,root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-170},rUpper:{r:20},lLower:{r:0},rLower:{r:60},mouth:4,eyes:i%2?2:0,sound:i===72?'plof':''};   // finale: splits
+      if(ph>=12)return {...face,...hips,head:{r:[0,90,180,-90][ph-12]},lUpper:{r:-160},rUpper:{r:160},lLower:{r:0},rLower:{r:0},sound:ph===12?'spin':''};   // headspin every 2 s
+      return {...face,...hips,...point};
+    },{music:'disco',props:['afro','shades','flareL','flareR','discoShirt']}),
     count_hop:A(8,[F(1,crouch),F(2,{root:{y:-35},rUpper:{r:-170},rLower:{r:0},mouth:1},'boing'),F(1,{root:{y:-10},rUpper:{r:-170},rLower:{r:0}}),F(1,{...crouch,rUpper:{r:-170},rLower:{r:0}})]),
   };
 }
