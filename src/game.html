@@ -112,15 +112,15 @@ function drawSlinger(){const g=$('slinger');g.innerHTML='';const {a,c,b}=ROPE;
   for(let i=0;i<10;i++){const p=flagPt(i);
     g.append(el('path',{class:'flag',d:'M-12,0 L12,0 L0,26 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2.5,'stroke-linejoin':'round',transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`}));}
   paintFlags();}
-function paintFlags(){flagEls().forEach((f,i)=>f.setAttribute('fill',i<cfg.flags?FLAG_COLORS[i%5]:'#fff'));}
+function paintFlags(){flagEls().forEach((f,i)=>f.setAttribute('fill',i<cfg.flags?FLAG_COLORS[i%FLAG_COLORS.length]:'#fff'));}
 // One star flies from Terrance to the next empty flag; the flag takes its colour with a pop. Timing via setTimeout so it also works when the tab is hidden.
 function addFlag(){if(cfg.flags>=10)return;const i=cfg.flags++;saveCfg();
-  const f=flagEls()[i],p=flagPt(i),col=FLAG_COLORS[i%5];
+  const f=flagEls()[i],p=flagPt(i),col=FLAG_COLORS[i%FLAG_COLORS.length];
   const s=el('path',{d:'M0,-10 L3,-3 L10,-3 L4,2 L6,9 L0,5 L-6,9 L-4,2 L-10,-3 L-3,-3 Z',fill:col,stroke:'#2b2622','stroke-width':1.5});$('fx').append(s);
-  s.animate([{transform:'translate(126px,300px) scale(1.4)'},{transform:`translate(${p.x}px,${p.y+12}px) scale(.6)`}],{duration:500,easing:'ease-in'});
+  s.animate([{transform:'translate(126px,300px) scale(1.4)'},{transform:`translate(${p.x}px,${p.y+12}px) scale(.6)`}],{duration:500,easing:'ease-in',fill:'forwards'});
   setTimeout(()=>{s.remove();f.setAttribute('fill',col);SFX.play('pop');
     const tf=`translate(${p.x}px,${p.y}px)`;f.animate([{transform:tf+' scale(1)'},{transform:tf+' scale(1.3)'},{transform:tf+' scale(1)'}],{duration:300});},500);}
-cfg.flags=Math.min(10,Math.max(0,+cfg.flags||0));drawSlinger();
+cfg.flags=Math.min(10,Math.max(0,Math.round(+cfg.flags)||0));drawSlinger();
 $('gear').onclick=()=>{state='paused';player.stop();$('setNames').value=cfg.names.join(', ');$('setLang').value=cfg.lang;$('setKey').value=cfg.key;$('setVoice').value=cfg.voiceId;$('setRate').value=cfg.rate;$('rateVal').textContent=cfg.rate+'×';$('animInfo').textContent=Object.keys(lib).length+' animaties geladen';$('settings').style.display='flex';};
 $('setFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>$('setJson').value=t);};
 $('setSave').onclick=()=>{cfg.names=$('setNames').value.split(',').map(s=>s.trim()).filter(Boolean);if(!cfg.names.length)cfg.names=['Mama','Papa'];cfg.lang=$('setLang').value;cfg.key=$('setKey').value.trim();cfg.voiceId=$('setVoice').value.trim();cfg.rate=+$('setRate').value;applyVoice();VOICE.cache={};saveCfg();
@@ -262,9 +262,9 @@ async function waveFlags(){SFX.play('horn');flagEls().forEach((f,i)=>{const p=fl
   await wait(700);}
 async function dropFlags(){const fl=flagEls();
   for(let i=0;i<fl.length;i++){const p=flagPt(i);SFX.play('pop');
-    fl[i].animate([{transform:`translate(${p.x}px,${p.y}px) rotate(0)`,opacity:1},{transform:`translate(${p.x+10}px,${p.y+70}px) rotate(120deg)`,opacity:0}],{duration:500,easing:'ease-in'});
+    fl[i].animate([{transform:`translate(${p.x}px,${p.y}px) rotate(0)`,opacity:1},{transform:`translate(${p.x+10}px,${p.y+70}px) rotate(120deg)`,opacity:0}],{duration:500,easing:'ease-in',fill:'forwards'});
     await wait(80);}
-  await wait(500);cfg.flags=0;saveCfg();paintFlags();}
+  await wait(500);cfg.flags=0;saveCfg();paintFlags();fl.forEach(f=>f.getAnimations().forEach(a=>a.cancel()));}
 async function danceParty(){await waveFlags();const d=pick('dance_');stars();music.play(d.music);setTimeout(stars,600);await playAsync(d);music.stop();stars();await speakAsync(rnd(PRAISE[cfg.lang]));await dropFlags();}
 
 // ---------- poking him ----------
@@ -289,7 +289,7 @@ async function onTap(g,it){if(state!=='waiting'&&state!=='idling')return;const m
     if(cfg.flags>=10)await danceParty();
     await wait(400);nextRound();
   }else{
-    {const tf=g.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');g.animate([{transform:tf+' rotate(0)'},{transform:tf+' rotate(-12)'},{transform:tf+' rotate(12)'},{transform:tf+' rotate(0)'}],{duration:400});}
+    {const tf=g.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');g.animate([{transform:tf+' rotate(0)'},{transform:tf+' rotate(-12deg)'},{transform:tf+' rotate(12deg)'},{transform:tf+' rotate(0)'}],{duration:400});}
     state='waiting';
     await playAsync(pick('mild_'));if(my!==gen)return;await speakAsync(rnd(OOPS[cfg.lang]));if(my!==gen)return;
     const ok=[...document.querySelectorAll('.bubble')].find(b=>b.dataset.ok);
