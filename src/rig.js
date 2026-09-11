@@ -72,6 +72,10 @@ function buildRig(container){
   squint.append(el('path',{d:'M-19,-37 L-8,-30 L-19,-23',fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'}));
   squint.append(el('path',{d:'M19,-37 L8,-30 L19,-23',fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'}));
   groups.top.insertBefore(squint,groups.hat);groups.squint=squint;
+  // knocked-out 'X X' (eyes=3)
+  const xx=el('g',{class:'xx'});
+  for(const s of[-1,1]){xx.append(el('path',{d:`M${s*12-7},-37 L${s*12+7},-23 M${s*12+7},-37 L${s*12-7},-23`,fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round'}));}
+  groups.top.insertBefore(xx,groups.hat);groups.xx=xx;
   return groups;
 }
 function applyPose(groups,pose){
@@ -80,6 +84,7 @@ function applyPose(groups,pose){
     groups[id].setAttribute('transform',`translate(${j.px+p.x},${j.py+p.y}) rotate(${p.r})`);}
   groups.lids.style.display=pose.eyes?'':'none';
   groups.squint.style.display=pose.eyes===2?'':'none';
+  groups.xx.style.display=pose.eyes===3?'':'none';
 }
 function createDoll(container){const groups=buildRig(container);const d={groups,pose:defaultPose(),apply(){applyPose(groups,d.pose);},set(p){d.pose=clone(p);d.apply();}};d.apply();return d;}
 
@@ -118,6 +123,9 @@ const SFX=(()=>{
     ding:()=>{sweep('sine',880,880,0.16,0.25);sweep('sine',1320,1320,0.28,0.25,0.15);},
     pop:()=>sweep('sine',300,900,0.07,0.3),
     spin:()=>sweep('triangle',350,1500,0.5,0.2),
+    plof:()=>{burst(0.18,'lowpass',140,0.9);sweep('sine',70,30,0.2,0.4);},
+    oef:()=>sweep('sawtooth',420,160,0.22,0.2),
+    au:()=>sweep('square',600,900,0.18,0.15),
   };
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};
@@ -208,23 +216,31 @@ function makeDefaultLib(){
       F(3,{root:{y:-22,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:30},rThigh:{r:26},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-110},rUpper:{r:-85},lLower:{r:-25},rLower:{r:-35},mouth:4,eyes:2,hat:{y:-12,r:8}}),
       F(2,{root:{y:-10},torso:{r:-10},head:{r:-4},lThigh:{r:16},rThigh:{r:14},lUpper:{r:-60},rUpper:{r:-40},mouth:1,eyes:2}),
       F(2,{...crouch,mouth:1,eyes:0,lIris:{x:-3},rIris:{x:3}}),F(2,{mouth:0,eyes:1}),F(2,base)]),
+    slap_split:A(8,[F(2,{...crouch,mouth:1}),F(2,{root:{y:-50},...armsUp,mouth:4,lThigh:{r:20},rThigh:{r:-20},lShin:{r:-30},rShin:{r:30}},'boing'),
+      F(1,{root:{y:-20},...armsUp,mouth:4,lThigh:{r:60},rThigh:{r:-60}}),
+      F(1,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-80},rUpper:{r:80},lLower:{r:-40},rLower:{r:40},mouth:4,eyes:3,hat:{y:-14}},'plof'),
+      F(1,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-80},rUpper:{r:80},lLower:{r:-40},rLower:{r:40},mouth:1,eyes:2,torso:{r:-4},hat:{y:-6}},'oef'),
+      F(2,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-80},rUpper:{r:80},lLower:{r:-40},rLower:{r:40},mouth:4,eyes:3,torso:{r:4}},'au'),
+      F(3,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-20},rUpper:{r:20},lLower:{r:-80},rLower:{r:80},mouth:1,eyes:2,head:{r:8}}),
+      F(2,{...crouch,mouth:0,eyes:1}),F(2,base)]),
     slap_fart_launch:A(8,[F(3,{...crouch,eyes:1,torso:{r:6},head:{r:6}}),F(2,{root:{y:-30},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'bigfart'),
       F(2,{root:{y:-75},...armsUp,mouth:4,torso:{r:15},lThigh:{r:-30},rThigh:{r:30}}),F(2,{root:{y:-95},...armsUp,mouth:4,torso:{r:-15},lThigh:{r:30},rThigh:{r:-30},hat:{y:-20,r:30}}),
       F(2,{root:{y:-60},...armsUp,mouth:1,torso:{r:10},hat:{y:-40,r:60}}),F(2,{root:{y:-20},mouth:1,eyes:1,hat:{y:-20,r:30}}),F(2,{...crouch,eyes:1},'thud'),F(3,base)]),
     slap_headspin:A(8,[F(1,{head:{r:0},mouth:4},'spin'),F(1,{head:{r:90},mouth:4}),F(1,{head:{r:180},mouth:4}),F(1,{head:{r:-90},mouth:4}),F(1,{head:{r:0},mouth:4}),
       F(1,{head:{r:90},mouth:4}),F(1,{head:{r:180},mouth:4}),F(1,{head:{r:-90},mouth:4}),F(2,{head:{r:10},mouth:1,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
     slap_faceplant:A(8,[F(2,{torso:{r:15},head:{r:10},mouth:1}),F(1,{torso:{r:45},root:{y:10},lUpper:{r:-90},rUpper:{r:-90},mouth:4}),
-      F(4,{...flat(1),lUpper:{r:-90},rUpper:{r:-90},lThigh:{r:-10},rThigh:{r:10},mouth:4,eyes:1},'thud'),
+      F(2,{...flat(1),lUpper:{r:-90},rUpper:{r:-90},lThigh:{r:-10},rThigh:{r:10},mouth:4,eyes:3},'thud'),
+      F(2,{...flat(1),lUpper:{r:-90},rUpper:{r:-90},lThigh:{r:-10},rThigh:{r:10},mouth:1,eyes:3},'au'),
       F(3,{torso:{r:25},root:{y:25},head:{r:-15},mouth:1,lIris:{x:-5},rIris:{x:5},lThigh:{r:-60},rThigh:{r:-60},lShin:{r:70},rShin:{r:70}}),
       F(3,{torso:{r:25},root:{y:25},head:{r:15},mouth:1,lIris:{x:5,y:3},rIris:{x:-5},lThigh:{r:-60},rThigh:{r:-60},lShin:{r:70},rShin:{r:70}}),F(2,base)]),
     slap_slip:A(8,[F(1,{lThigh:{r:-70},rThigh:{r:-90},torso:{r:-20},root:{y:-10},...armsUp,mouth:4},'slip'),
-      F(4,{...flat(-1),lThigh:{r:20},rThigh:{r:-20},mouth:4},'thud'),F(3,{...flat(-1),lThigh:{r:20},rThigh:{r:-20},mouth:0,eyes:1}),
+      F(2,{...flat(-1),lThigh:{r:20},rThigh:{r:-20},mouth:4,eyes:3},'thud'),F(2,{...flat(-1),lThigh:{r:20},rThigh:{r:-20},mouth:1,eyes:3},'oef'),F(3,{...flat(-1),lThigh:{r:20},rThigh:{r:-20},mouth:0,eyes:1}),
       F(2,{torso:{r:-30},root:{y:20},mouth:1,lIris:{x:6}}),F(2,base)]),
     slap_hat:A(8,[F(1,{hat:{y:-20,r:20},head:{r:-5},mouth:1},'slip'),F(1,{hat:{y:-55,x:25,r:90},head:{r:-15},mouth:2,lIris:{y:-3},rIris:{y:-3}}),
       F(3,{hat:{y:-90,x:55,r:180},head:{r:-25},mouth:4,lIris:{y:-3},rIris:{y:-3}}),F(2,{hat:{y:-40,x:55,r:180},head:{r:-15},mouth:1}),
       F(2,{hat:{y:0,x:0,r:0},head:{r:5},mouth:0,eyes:1},'pop'),F(2,base)]),
-    slap_sneeze:A(8,[F(3,{head:{r:-20},torso:{r:-8},mouth:1,eyes:1}),F(2,{head:{r:-32},torso:{r:-12},mouth:2,eyes:1}),
-      F(1,{head:{r:35},torso:{r:22},mouth:4,hat:{y:-30,r:40}},'sneeze'),F(2,{head:{r:25},torso:{r:15},mouth:4,hat:{y:-60,x:40,r:120}}),
+    slap_sneeze:A(8,[F(3,{head:{r:-20},torso:{r:-8},mouth:1,eyes:1}),F(2,{head:{r:-32},torso:{r:-12},mouth:2,eyes:2}),
+      F(1,{head:{r:35},torso:{r:22},mouth:4,eyes:2,hat:{y:-30,r:40}},'sneeze'),F(2,{head:{r:25},torso:{r:15},mouth:4,eyes:2,hat:{y:-60,x:40,r:120}}),
       F(3,{head:{r:5},mouth:0,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
     bonus_poop:A(8,[F(3,{head:{r:-12},mouth:1,lIris:{y:-3},rIris:{y:-3}},'whistle'),F(3,{head:{r:-12},mouth:2,lIris:{y:-3},rIris:{y:-3}}),
       F(3,{head:{r:0},mouth:4,eyes:1},'splat'),F(3,{head:{r:10},mouth:0,eyes:1}),F(3,{head:{r:10},mouth:1,lIris:{x:-6},rIris:{x:6}}),F(2,base)]),

@@ -30,12 +30,12 @@ docs/                  build output — GitHub Pages serves this folder (Pages o
 
 ## How the character works (src/rig.js)
 - `R` = joint table, parent-relative, y down. Root at hips. Chain: root → torso → head (bottom half, pivot at neck) → top (upper half of head) → lIris/rIris/hat. Arms: torso → lUpper → lLower → lHand (same right). Legs: torso → lThigh → lShin → lFoot.
-- Each joint has `{x,y,r}` (offset + rotation). A pose also has `mouth` (0–4) and `eyes` (0 open / 1 closed / 2 squint "><").
+- Each joint has `{x,y,r}` (offset + rotation). A pose also has `mouth` (0–4) and `eyes` (0 open / 1 closed / 2 squint "><" / 3 knocked-out "X X").
 - **Mouth is the South Park split head**: the *top* half lifts off the *bottom* half. States: 0 closed, 1 open (+10px), 2 open tilted left, 3 open tilted right, 4 "Loud!" (+26px). Table `MOUTH`.
 - Character is cross-eyed by default (comedic); irises are draggable joints so they can drift.
 - `pose(overrides)` builds a full pose from defaults; `makeDefaultLib()` defines every animation as keyframes `{hold, sound, pose}` at a given fps, played stepped (jerky) by `makePlayer`.
 - Animation naming drives game behaviour: `idle_*` (between rounds), `slap_*` (correct answer, 70%), `cheer_*` (correct, 15%), `bonus_poop` (correct, 15%, with a bird overlay drawn by the game), `mild_*` (wrong answer), `speak_point` (pose while talking), `count_hop` (numbers, played N times). Add a `slap_xyz` and the game picks it up.
-- Sounds: `SFX.play(name)` — names: fart, bigfart, boing, thud, slip, whistle, splat, sneeze, ding, pop, spin. Lookup order: baked `window.ASSETS.sounds` → `sounds/<name>.mp3` next to the html → WebAudio synth. Variants: `fart_1.mp3`, `fart_2.mp3` … are picked at random for `fart` (any name works the same).
+- Sounds: `SFX.play(name)` — names: fart, bigfart, boing, thud, slip, whistle, splat, sneeze, ding, pop, spin, plof (dull body hit), oef, au (short yelps in the game voice, made by tools/build-sfx.js via TTS). Comedy rule from Thomas: short, fast sounds in quick succession. Lookup order: baked `window.ASSETS.sounds` → `sounds/<name>.mp3` next to the html → WebAudio synth. Variants: `fart_1.mp3`, `fart_2.mp3` … are picked at random for `fart` (any name works the same).
 - Voice: `speak(text, doll, {lang, done})`. Lookup: baked `window.ASSETS.voice['nl-NL:text']` → localStorage cache → live ElevenLabs (only if a key is set in the game's ⚙) → `voice/<lang>/<slug>.mp3` → phone TTS pitched up. Playback uses `preservesPitch=false` + `playbackRate` (VOICE.cfg.rate, default 1.25, "Gekke stem" slider) for the nasal T&P sound. Mouth is driven per character while audio plays (`mouthForChar`).
 - `PHRASES` (praise/oops/number words per language, letters A–Z) lives in rig.js so the build script and the game share it. Names come from config.json / ⚙ settings.
 
