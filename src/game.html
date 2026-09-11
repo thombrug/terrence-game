@@ -81,7 +81,12 @@ __RIG__
 const $=id=>document.getElementById(id);
 const svg=$('svg');
 const doll=createDoll($('rig'));
-const player=makePlayer(doll);
+const FX={};   // fx name -> (frame, anim) => void; overlays drawn by the game when a keyframe carries `fx`
+const player=makePlayer(doll,{fx:(n,k,a)=>{if(FX[n])FX[n](k,a);}});
+// Position (svg user units) and rotation (deg) of a rig joint; dx,dy is an offset in the joint's own space.
+function jointXY(id,dx=0,dy=0){const m=doll.groups[id].getCTM();const p=svg.createSVGPoint();p.x=dx;p.y=dy;const q=p.matrixTransform(m);
+  return {x:q.x,y:q.y,r:Math.atan2(m.b,m.a)*180/Math.PI};}
+const music={cur:null,play(n){this.stop();this.cur=SFX.play(n)||null;},stop(){if(this.cur){try{this.cur.pause();}catch(e){}this.cur=null;}}};
 let lib=makeDefaultLib();if(window.CUSTOM_ANIMS)lib={...lib,...window.CUSTOM_ANIMS};
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const pick=(prefix)=>{const ks=Object.keys(lib).filter(k=>k.startsWith(prefix));return lib[rnd(ks)];};

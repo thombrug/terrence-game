@@ -71,6 +71,7 @@
     <button id="btnDelKey">Delete current</button>
     <label>hold <input type="number" id="nHold" min="1" max="30" value="3" style="width:56px"></label>
     <label>sound <select id="selSound"><option value="">none</option></select></label>
+    <label>fx <input type="text" id="nFx" placeholder="ball, sparks…" style="width:90px"></label>
   </div>
   <div class="row" style="padding:0">
     <label>fps <input type="number" id="nFps" min="2" max="24" value="8" style="width:56px"></label>
@@ -158,7 +159,7 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 function blankPose(){const p={mouth:0,eyes:0};for(const k in R)p[k]={x:0,y:0,r:0};return p;}
 function defaultPose(){const p=blankPose();for(const k in DEFAULT)Object.assign(p[k],DEFAULT[k]);return p;}
 // pose(over): default pose with overrides, e.g. pose({rUpper:{r:-150},mouth:2})
-function pose(over={}){const p=defaultPose();for(const k in over){if(typeof over[k]==='object')Object.assign(p[k],over[k]);else p[k]=over[k];}return p;}
+function pose(over={}){const p=defaultPose();for(const k in over){if(!(k in p))continue;if(typeof over[k]==='object')Object.assign(p[k],over[k]);else p[k]=over[k];}return p;}
 
 const NS='http://www.w3.org/2000/svg';
 const el=(t,a={})=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
@@ -188,6 +189,17 @@ const SHAPES={
     g.append(el('circle',{cx:0,cy:-15,r:5,fill:'#c8322b',...OUT}));},
   root(){}
 };
+// ===== Props: costume pieces, hidden unless an animation lists them in anim.props =====
+// z: 'back' = behind the joint's own shape, 'mid' = over the shape but under child limbs, default = on top of everything
+const torch=g=>{g.append(el('rect',{x:-4,y:-34,width:8,height:40,rx:3,fill:'#8a5a2b',...OUT}));g.append(el('rect',{x:-6,y:-38,width:12,height:8,rx:2,fill:'#c8322b',...OUT}));};
+const flare=g=>g.append(el('path',{d:'M-8,0 L-22,26 L22,26 L8,0 Z',fill:'#8e44ad',...OUT}));
+const PROPS={
+  torchL:{joint:'lHand',draw:torch}, torchR:{joint:'rHand',draw:torch},
+  afro:{joint:'head',z:'back',draw:g=>{for(const [x,y,r] of [[0,-56,40],[-34,-40,26],[34,-40,26],[-40,-14,20],[40,-14,20],[-18,-70,22],[18,-70,22]])g.append(el('circle',{cx:x,cy:y,r,fill:'#2b2622',...OUT}));}},
+  shades:{joint:'top',draw:g=>{for(const s of[-1,1])g.append(el('circle',{cx:s*12,cy:-30,r:12,fill:'#2b2622',...OUT}));g.append(el('rect',{x:-3,y:-32,width:6,height:3,fill:'#2b2622'}));}},
+  flareL:{joint:'lShin',z:'back',draw:flare}, flareR:{joint:'rShin',z:'back',draw:flare},
+  discoShirt:{joint:'torso',z:'mid',draw:g=>g.append(el('rect',{x:-32,y:-48,width:64,height:60,rx:14,fill:'#f39c12',...OUT}))},
+};
 function buildRig(container){
   const groups={};
   for(const id of ORDER){const g=el('g',{class:'j_'+id});SHAPES[id]&&SHAPES[id](g);groups[id]=g;(R[id].parent?groups[R[id].parent]:container).append(g);}
@@ -205,6 +217,13 @@ function buildRig(container){
   for(const s of[-1,1]){xx.append(el('path',{d:`M${s*12-7},-37 L${s*12+7},-23 M${s*12+7},-37 L${s*12-7},-23`,fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round'}));}
   groups.top.insertBefore(xx,groups.hat);groups.xx=xx;
   groups.eyewhites=[...groups.top.querySelectorAll('.eyewhite')];
+  groups.props={};
+  for(const name in PROPS){const p=PROPS[name],g=el('g',{class:'prop_'+name});g.style.display='none';p.draw(g);
+    const host=groups[p.joint];
+    if(p.z==='back')host.insertBefore(g,host.firstChild);
+    else if(p.z==='mid')host.insertBefore(g,[...host.children].find(c=>/^j_/.test(c.getAttribute('class')||''))||null);
+    else host.append(g);
+    groups.props[name]=g;}
   return groups;
 }
 function applyPose(groups,pose){
@@ -218,7 +237,10 @@ function applyPose(groups,pose){
   groups.eyewhites.forEach(e=>e.style.display=marks?'none':'');
   groups.lIris.style.display=groups.rIris.style.display=marks?'none':'';
 }
-function createDoll(container){const groups=buildRig(container);const d={groups,pose:defaultPose(),apply(){applyPose(groups,d.pose);},set(p){d.pose=clone(p);d.apply();}};d.apply();return d;}
+function createDoll(container){const groups=buildRig(container);
+  const d={groups,pose:defaultPose(),apply(){applyPose(groups,d.pose);},set(p){d.pose=clone(p);d.apply();},
+    setProps(list){list=list||[];for(const n in groups.props)groups.props[n].style.display=list.includes(n)?'':'none';}};
+  d.apply();return d;}
 
 // ===== Phrases (shared by game and the voice build script) =====
 const PHRASES={
@@ -258,6 +280,14 @@ const SFX=(()=>{
     plof:()=>{burst(0.18,'lowpass',140,0.9);sweep('sine',70,30,0.2,0.4);},
     oef:()=>sweep('sawtooth',420,160,0.22,0.2),
     au:()=>sweep('square',600,900,0.18,0.15),
+    bird:()=>{sweep('square',900,600,0.12,0.15);sweep('square',950,500,0.14,0.15,0.15);},
+    bonk:()=>{burst(0.12,'bandpass',900,0.6);sweep('sine',400,120,0.18,0.4);},
+    moo:()=>sweep('sawtooth',180,120,0.8,0.2),
+    oink:()=>{sweep('square',500,250,0.12,0.2);sweep('square',520,240,0.12,0.2,0.16);},
+    baa:()=>sweep('sawtooth',420,300,0.6,0.15),
+    sparkle:()=>burst(2.5,'highpass',5000,0.15),
+    whoosh:()=>{burst(0.6,'lowpass',900,0.9);sweep('sawtooth',200,60,0.6,0.2);},
+    disco:()=>{}, jig:()=>{},   // music: mp3 only, silent without one
   };
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};
@@ -266,26 +296,30 @@ const SFX=(()=>{
   function play(n){if(!S[n])return;const vs=variants(n);const k=vs[Math.floor(Math.random()*vs.length)];
     if(files[k]===undefined&&baked()[k]){files[k]=new Audio(baked()[k]);}const f=files[k];
     if(f===false){try{S[n]();}catch(e){}return;}
-    if(f){const a=f.cloneNode();a.volume=1;a.play().catch(()=>{});return;}
+    if(f){const a=f.cloneNode();a.volume=1;a.play().catch(()=>{});return a;}
     const a=new Audio(base+k+'.mp3');files[k]=undefined;
     a.addEventListener('canplaythrough',()=>{files[k]=a;a.play().catch(()=>{});},{once:true});
     a.addEventListener('error',()=>{files[k]=false;try{S[n]();}catch(e){}},{once:true});
-    a.load();}
+    a.load();return a;}
   return {names:Object.keys(S),play,unlock:ac,setBase(b){base=b;for(const k in files)delete files[k];}};
 })();
 
 // ===== Player =====
-function makePlayer(doll){
+// makePlayer(doll,{fx}): fx(name,frame,anim) is called when a keyframe with an `fx` field starts (the game draws overlays).
+// anim.props (array of PROPS names) are shown for the duration of the animation.
+function makePlayer(doll,{fx}={}){
   let timer=null,onDone=null;
-  function stop(){if(timer){clearInterval(timer);timer=null;}}
+  function stop(){if(timer){clearInterval(timer);timer=null;}doll.setProps([]);}
   function play(anim,{loop=false,step=true,done}={}){stop();if(!anim||!anim.frames.length){done&&done();return;}
-    const fr=anim.frames,fps=anim.fps||8;let i=0,sub=0;onDone=done;
+    const fr=anim.frames,fps=anim.fps||8;let i=0,sub=0;onDone=done;doll.setProps(anim.props);
     const tick=()=>{const k=fr[i],n=fr[(i+1)%fr.length];
       if(sub===0&&k.sound)SFX.play(k.sound);
+      if(sub===0&&k.fx&&fx)fx(k.fx,k,anim);
       doll.set(step?k.pose:lerpPose(k.pose,n.pose,sub/k.hold));
       if(++sub>=k.hold){sub=0;i++;if(i>=fr.length){if(loop)i=0;else{stop();onDone&&onDone();}}}};
     tick();timer=setInterval(tick,1000/fps);}
-  return {play,stop,playing:()=>!!timer};
+  const duration=a=>a.frames.reduce((s,k)=>s+k.hold,0)/(a.fps||8)*1000;
+  return {play,stop,playing:()=>!!timer,duration};
 }
 function lerpPose(a,b,t){const p={mouth:t<.5?a.mouth:b.mouth,eyes:t<.5?a.eyes:b.eyes};for(const k in R)p[k]={x:a[k].x+(b[k].x-a[k].x)*t,y:a[k].y+(b[k].y-a[k].y)*t,r:a[k].r+(b[k].r-a[k].r)*t};return p;}
 
@@ -322,8 +356,10 @@ function speak(text,doll,{lang='nl-NL',done}={}){
 
 // ===== Default animation library =====
 function makeDefaultLib(){
-  const F=(hold,over,sound)=>({hold,sound:sound||'',pose:pose(over)});
-  const A=(fps,frames)=>({fps,frames});
+  const F=(hold,over,sound,fx)=>({hold,sound:sound||'',fx:fx||'',pose:pose(over)});
+  const A=(fps,frames,extra={})=>({fps,frames,...extra});   // extra: {props:[...], music:'disco'}
+  // seq(fps,n,fn,extra): n frames of hold 1; fn(i) returns pose overrides plus optional sound/fx
+  const seq=(fps,n,fn,extra)=>A(fps,Array.from({length:n},(_,i)=>{const o=fn(i);return {hold:1,sound:o.sound||'',fx:o.fx||'',pose:pose(o)};}),extra);
   const base={};
   const armsUp={lUpper:{r:-160},rUpper:{r:160},lLower:{r:0},rLower:{r:0}};
   const crouch={root:{y:6},lThigh:{r:20},rThigh:{r:-20},lShin:{r:-35},rShin:{r:35},torso:{r:0}};
@@ -434,28 +470,28 @@ $('btnSay').onclick=()=>{SFX.unlock();speak($('sayText').value,doll,{lang:'en-GB
 
 // keyframes
 let keys=[],cur=-1;
-const player=makePlayer({set(p){doll.set(p);refresh();}});
+const player=makePlayer({set(p){doll.set(p);refresh();},setProps(l){doll.setProps(l);}});
 SFX.names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;$('selSound').append(o);});
 function renderFrames(){const box=$('frames');box.innerHTML='';
   keys.forEach((k,i)=>{const d=document.createElement('div');d.className='frame'+(i===cur?' cur':'');
-    d.innerHTML=`<b>${i+1}</b><small>${k.hold}f${k.sound?' 🔊':''}</small>`;d.onclick=()=>{cur=i;doll.set(k.pose);refresh();$('nHold').value=k.hold;$('selSound').value=k.sound||'';renderFrames();};box.append(d);});
+    d.innerHTML=`<b>${i+1}</b><small>${k.hold}f${k.sound?' 🔊':''}${k.fx?' ✨':''}</small>`;d.onclick=()=>{cur=i;doll.set(k.pose);refresh();$('nHold').value=k.hold;$('selSound').value=k.sound||'';$('nFx').value=k.fx||'';renderFrames();};box.append(d);});
   if(!keys.length)box.innerHTML='<span class="hint">No keyframes. Pose the doll and press "+ Add keyframe".</span>';}
-const frameFromUI=()=>({hold:+$('nHold').value||3,sound:$('selSound').value,pose:clone(doll.pose)});
+const frameFromUI=()=>({hold:+$('nHold').value||3,sound:$('selSound').value,fx:$('nFx').value.trim(),pose:clone(doll.pose)});
 $('btnAddKey').onclick=()=>{keys.splice(cur+1,0,frameFromUI());cur++;renderFrames();};
 $('btnUpdKey').onclick=()=>{if(cur<0)return;keys[cur]=frameFromUI();renderFrames();};
 $('btnDelKey').onclick=()=>{if(cur<0)return;keys.splice(cur,1);cur=Math.min(cur,keys.length-1);renderFrames();};
-$('btnPlay').onclick=()=>{SFX.unlock();player.play({fps:+$('nFps').value||8,frames:keys},{loop:$('chkLoop').checked,step:$('chkStep').checked});};
+$('btnPlay').onclick=()=>{SFX.unlock();player.play({...(lib[$('animName').value.trim()]||{}),fps:+$('nFps').value||8,frames:keys},{loop:$('chkLoop').checked,step:$('chkStep').checked});};
 $('btnStop').onclick=()=>player.stop();
 
 // library
 let lib=makeDefaultLib();
 function renderLib(){const s=$('animList'),v=s.value;s.innerHTML='';for(const n in lib){const o=document.createElement('option');o.textContent=n;s.append(o);}if(lib[v])s.value=v;}
 function loadAnim(n){const a=lib[n];if(!a)return;player.stop();keys=clone(a.frames);$('nFps').value=a.fps;cur=0;doll.set(keys[0].pose);refresh();
-  $('nHold').value=keys[0].hold;$('selSound').value=keys[0].sound||'';renderFrames();$('animName').value=n;}
+  $('nHold').value=keys[0].hold;$('selSound').value=keys[0].sound||'';$('nFx').value=keys[0].fx||'';renderFrames();$('animName').value=n;}
 $('btnLoad').onclick=()=>loadAnim($('animList').value);
 $('animList').onchange=()=>loadAnim($('animList').value);
 $('btnSave').onclick=()=>{const n=$('animName').value.trim();if(!n||!keys.length){alert('Give it a name and add at least one keyframe.');return;}
-  lib[n]={fps:+$('nFps').value||8,frames:clone(keys)};renderLib();$('animList').value=n;};
+  lib[n]={...(lib[n]||{}),fps:+$('nFps').value||8,frames:clone(keys)};renderLib();$('animList').value=n;};
 $('btnDelAnim').onclick=()=>{if(confirm('Delete '+$('animList').value+'?')){delete lib[$('animList').value];renderLib();}};
 $('btnExport').onclick=()=>{$('jsonBox').value=JSON.stringify({rig:'terrance-v4',animations:lib});};
 $('btnDownload').onclick=()=>{const blob=new Blob([JSON.stringify({rig:'terrance-v4',animations:lib})],{type:'application/json'});

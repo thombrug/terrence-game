@@ -71,6 +71,7 @@
     <button id="btnDelKey">Delete current</button>
     <label>hold <input type="number" id="nHold" min="1" max="30" value="3" style="width:56px"></label>
     <label>sound <select id="selSound"><option value="">none</option></select></label>
+    <label>fx <input type="text" id="nFx" placeholder="ball, sparks…" style="width:90px"></label>
   </div>
   <div class="row" style="padding:0">
     <label>fps <input type="number" id="nFps" min="2" max="24" value="8" style="width:56px"></label>
@@ -174,28 +175,28 @@ $('btnSay').onclick=()=>{SFX.unlock();speak($('sayText').value,doll,{lang:'en-GB
 
 // keyframes
 let keys=[],cur=-1;
-const player=makePlayer({set(p){doll.set(p);refresh();}});
+const player=makePlayer({set(p){doll.set(p);refresh();},setProps(l){doll.setProps(l);}});
 SFX.names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;$('selSound').append(o);});
 function renderFrames(){const box=$('frames');box.innerHTML='';
   keys.forEach((k,i)=>{const d=document.createElement('div');d.className='frame'+(i===cur?' cur':'');
-    d.innerHTML=`<b>${i+1}</b><small>${k.hold}f${k.sound?' 🔊':''}</small>`;d.onclick=()=>{cur=i;doll.set(k.pose);refresh();$('nHold').value=k.hold;$('selSound').value=k.sound||'';renderFrames();};box.append(d);});
+    d.innerHTML=`<b>${i+1}</b><small>${k.hold}f${k.sound?' 🔊':''}${k.fx?' ✨':''}</small>`;d.onclick=()=>{cur=i;doll.set(k.pose);refresh();$('nHold').value=k.hold;$('selSound').value=k.sound||'';$('nFx').value=k.fx||'';renderFrames();};box.append(d);});
   if(!keys.length)box.innerHTML='<span class="hint">No keyframes. Pose the doll and press "+ Add keyframe".</span>';}
-const frameFromUI=()=>({hold:+$('nHold').value||3,sound:$('selSound').value,pose:clone(doll.pose)});
+const frameFromUI=()=>({hold:+$('nHold').value||3,sound:$('selSound').value,fx:$('nFx').value.trim(),pose:clone(doll.pose)});
 $('btnAddKey').onclick=()=>{keys.splice(cur+1,0,frameFromUI());cur++;renderFrames();};
 $('btnUpdKey').onclick=()=>{if(cur<0)return;keys[cur]=frameFromUI();renderFrames();};
 $('btnDelKey').onclick=()=>{if(cur<0)return;keys.splice(cur,1);cur=Math.min(cur,keys.length-1);renderFrames();};
-$('btnPlay').onclick=()=>{SFX.unlock();player.play({fps:+$('nFps').value||8,frames:keys},{loop:$('chkLoop').checked,step:$('chkStep').checked});};
+$('btnPlay').onclick=()=>{SFX.unlock();player.play({...(lib[$('animName').value.trim()]||{}),fps:+$('nFps').value||8,frames:keys},{loop:$('chkLoop').checked,step:$('chkStep').checked});};
 $('btnStop').onclick=()=>player.stop();
 
 // library
 let lib=makeDefaultLib();
 function renderLib(){const s=$('animList'),v=s.value;s.innerHTML='';for(const n in lib){const o=document.createElement('option');o.textContent=n;s.append(o);}if(lib[v])s.value=v;}
 function loadAnim(n){const a=lib[n];if(!a)return;player.stop();keys=clone(a.frames);$('nFps').value=a.fps;cur=0;doll.set(keys[0].pose);refresh();
-  $('nHold').value=keys[0].hold;$('selSound').value=keys[0].sound||'';renderFrames();$('animName').value=n;}
+  $('nHold').value=keys[0].hold;$('selSound').value=keys[0].sound||'';$('nFx').value=keys[0].fx||'';renderFrames();$('animName').value=n;}
 $('btnLoad').onclick=()=>loadAnim($('animList').value);
 $('animList').onchange=()=>loadAnim($('animList').value);
 $('btnSave').onclick=()=>{const n=$('animName').value.trim();if(!n||!keys.length){alert('Give it a name and add at least one keyframe.');return;}
-  lib[n]={fps:+$('nFps').value||8,frames:clone(keys)};renderLib();$('animList').value=n;};
+  lib[n]={...(lib[n]||{}),fps:+$('nFps').value||8,frames:clone(keys)};renderLib();$('animList').value=n;};
 $('btnDelAnim').onclick=()=>{if(confirm('Delete '+$('animList').value+'?')){delete lib[$('animList').value];renderLib();}};
 $('btnExport').onclick=()=>{$('jsonBox').value=JSON.stringify({rig:'terrance-v4',animations:lib});};
 $('btnDownload').onclick=()=>{const blob=new Blob([JSON.stringify({rig:'terrance-v4',animations:lib})],{type:'application/json'});
