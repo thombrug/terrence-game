@@ -15,22 +15,23 @@ const SFX={
   fart_2: ['quick tiny cartoon fart squeak, one short pfft, comedic, dry',0.5],
   fart_3: ['short cartoon fart, single brief raspberry sound, bright, comedic, South Park style toot',0.6],
   fart_4: ['brief squeaky balloon fart toot, one short honk, cartoonish',0.5],
-  bigfart:['long wet rumbling cartoon fart, very loud, comedic, ends with a squeak',2.5],
   boing:  ['cartoon spring boing, bouncy, single hit',0.8],
   thud:   ['cartoon body faceplant thud on the ground, dull heavy hit, comedic',0.8],
   slip:   ['cartoon slip on a banana peel, quick slide whistle down then thump',1.2],
-  whistle:['cartoon slide whistle going up, quick',1.0],
   splat:  ['wet cartoon splat, single, comedic',0.7],
-  sneeze: ['big exaggerated cartoon sneeze, achoo, comedic',1.2],
   ding:   ['bright happy cartoon ding, single bell, success',0.8],
   pop:    ['small cartoon pop, cork popping, single',0.5],
   spin:   ['cartoon spinning whoosh, fast wobble, comedic, short',1.2],
-  plof_1: ['dull muffled thump, soft punch to the belly, very short, comedic cartoon',0.5],
-  plof_2: ['short low muffled plop, body hit, padded, cartoon, single',0.5],
+  plof:   ['short low muffled plop, body hit, padded, cartoon, single',0.5],
+  // gut-punch exhale candidates (no hard consonants): oef_4..6 via sound effects, oef_1..3 via the voice below
+  oef_4:  ['very short breathy grunt, air knocked out of a man by a punch to the belly, soft uh, cartoon, no words',0.5],
+  oef_5:  ['quick winded exhale, oof with no f, breath punched out, short, comedic',0.5],
+  oef_6:  ['tiny wheeze, man gets hit in the stomach, single short huh, cartoon',0.5],
 };
 // file name -> text spoken by the game's voice (short, in character)
 const YELPS={
-  oef_1:'Oef!', oef_2:'Oef!', oef_3:'Oeh!',
+  oef_1:'Euh!', oef_2:'Uh!', oef_3:'Hmpf!',
+  sneeze_1:'Hatsjoe!', sneeze_2:'Hatsjie!',
   au_1:'Au!', au_2:'Auw!', au_3:'Au au au!',
 };
 const force=process.argv.slice(2);
