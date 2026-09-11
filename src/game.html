@@ -150,8 +150,11 @@ async function birdPoop(){const fx=$('fx');const bird=el('g');
   wing.animate([{transform:'scaleY(1)'},{transform:'scaleY(-0.6)'},{transform:'scaleY(1)'}],{duration:260,iterations:12});
   await wait(1100);const blob=el('ellipse',{rx:8,ry:6,fill:'#fff',stroke:'#2b2622','stroke-width':2});fx.append(blob);
   const drop=playAsync(lib.bonus_poop);
-  blob.animate([{transform:'translate(150px,40px)'},{transform:'translate(126px,178px)'}],{duration:700,easing:'ease-in'}).onfinish=()=>{blob.remove();
-    const sp=el('path',{d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2,transform:'translate(126,180)'});fx.append(sp);setTimeout(()=>sp.remove(),2600);};
+  const hit=jointXY('hat',0,-10);   // aim at the hat as he looks up
+  blob.animate([{transform:'translate(150px,40px)'},{transform:`translate(${hit.x}px,${hit.y}px)`}],{duration:700,easing:'ease-in'}).onfinish=()=>{blob.remove();
+    // the splat lives inside the hat group so it rides along with the hat and the top of the head
+    const sp=el('path',{d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2,transform:'translate(0,-12) scale(0.65)'});
+    doll.groups.hat.append(sp);setTimeout(()=>sp.remove(),2600);};
   await drop;flight.onfinish=()=>bird.remove();}
 
 // ---------- fx overlays (triggered by keyframes with an `fx` field) ----------

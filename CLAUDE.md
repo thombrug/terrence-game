@@ -58,4 +58,4 @@ Touch-first editor. Drag the white dot at the end of a bone and it follows your 
 - Single-file outputs; no build framework, no bundler, no dependencies. Node 18+ only for the two scripts.
 - Keep everything touch-friendly and phone-portrait first (viewBox 360×520 for the game, 360×440 studio).
 - Don't call ElevenLabs from the game at runtime by default — cost control. Batch via tools/build-voice.js.
-- Animations stay "jerky": stepped playback at ~8 fps is the look, not a bug.
+- Animations stay "jerky": stepped playback at ~8 fps is the look, not a bug. `densify()` in rig.js adds automatic in-between frames (~30% more keyframes) where a keyframe is followed by a big pose change, so falls read better; tune with its `threshold`/`big` defaults. Falls to the left use `flat(-1)` with the hips shifted right so the head stays on screen.

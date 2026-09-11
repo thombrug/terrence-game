@@ -269,6 +269,17 @@ function makePlayer(doll,{fx}={}){
   const duration=a=>a.frames.reduce((s,k)=>s+k.hold,0)/(a.fps||8)*1000;
   return {play,stop,playing:()=>!!timer,duration};
 }
+// In-between frames: a keyframe held >= 2 ticks whose next pose differs a lot (a fall, a jump) spends its
+// last tick on the halfway pose. Adds roughly 30% keyframes where motion is coarse, without changing timing.
+function poseDelta(a,b){let m=0;for(const k in R){const p=a[k],q=b[k];m=Math.max(m,Math.abs(p.r-q.r),Math.abs(p.x-q.x)+Math.abs(p.y-q.y));}return m;}
+function midFrame(a,b){const p=lerpPose(a.pose,b.pose,0.5);p.mouth=a.pose.mouth;p.eyes=a.pose.eyes;return {hold:1,sound:'',fx:'',pose:p};}
+// A 1-tick keyframe followed by a huge change (the fall itself) gets a midway tick added instead (+125 ms).
+function densify(anim,threshold=40,big=80){const fr=anim.frames,out=[];
+  for(let i=0;i<fr.length;i++){const k=fr[i],n=fr[i+1];const d=n?poseDelta(k.pose,n.pose):0;
+    if(k.hold>=2&&d>=threshold){out.push({...k,hold:k.hold-1});out.push(midFrame(k,n));}
+    else if(k.hold===1&&d>=big){out.push(k);out.push(midFrame(k,n));}
+    else out.push(k);}
+  return {...anim,frames:out};}
 function lerpPose(a,b,t){const p={mouth:t<.5?a.mouth:b.mouth,eyes:t<.5?a.eyes:b.eyes};for(const k in R)p[k]={x:a[k].x+(b[k].x-a[k].x)*t,y:a[k].y+(b[k].y-a[k].y)*t,r:a[k].r+(b[k].r-a[k].r)*t};return p;}
 
 // ===== Speech-driven mouth =====
@@ -311,8 +322,8 @@ function makeDefaultLib(){
   const base={};
   const armsUp={lUpper:{r:-160},rUpper:{r:160},lLower:{r:0},rLower:{r:0}};
   const crouch={root:{y:6},lThigh:{r:20},rThigh:{r:-20},lShin:{r:-35},rShin:{r:35},torso:{r:0}};
-  const flat=(dir)=>({torso:{r:88*dir},root:{y:40,x:10*dir}});
-  return {
+  const flat=(dir)=>({torso:{r:88*dir},root:{y:40,x:dir>0?10:70}});   // falling left needs the hips further right to keep the head on screen
+  const lib={
     idle_breathe:A(4,[F(6,base),F(5,{torso:{y:1},head:{y:-1,r:1}}),F(4,base),F(1,{eyes:1}),F(2,base)]),
     idle_scratch:A(6,[F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3}}),
       F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3},eyes:1}),F(3,base)]),
@@ -405,6 +416,8 @@ function makeDefaultLib(){
     },{music:'disco',props:['afro','shades','flareL','flareR','discoShirt']}),
     count_hop:A(8,[F(1,crouch),F(2,{root:{y:-35},rUpper:{r:-170},rLower:{r:0},mouth:1},'boing'),F(1,{root:{y:-10},rUpper:{r:-170},rLower:{r:0}}),F(1,{...crouch,rUpper:{r:-170},rLower:{r:0}})]),
   };
+  for(const n in lib)if(!n.startsWith('dance_'))lib[n]=densify(lib[n]);
+  return lib;
 }
 
 </script>
@@ -481,8 +494,11 @@ async function birdPoop(){const fx=$('fx');const bird=el('g');
   wing.animate([{transform:'scaleY(1)'},{transform:'scaleY(-0.6)'},{transform:'scaleY(1)'}],{duration:260,iterations:12});
   await wait(1100);const blob=el('ellipse',{rx:8,ry:6,fill:'#fff',stroke:'#2b2622','stroke-width':2});fx.append(blob);
   const drop=playAsync(lib.bonus_poop);
-  blob.animate([{transform:'translate(150px,40px)'},{transform:'translate(126px,178px)'}],{duration:700,easing:'ease-in'}).onfinish=()=>{blob.remove();
-    const sp=el('path',{d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2,transform:'translate(126,180)'});fx.append(sp);setTimeout(()=>sp.remove(),2600);};
+  const hit=jointXY('hat',0,-10);   // aim at the hat as he looks up
+  blob.animate([{transform:'translate(150px,40px)'},{transform:`translate(${hit.x}px,${hit.y}px)`}],{duration:700,easing:'ease-in'}).onfinish=()=>{blob.remove();
+    // the splat lives inside the hat group so it rides along with the hat and the top of the head
+    const sp=el('path',{d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#fff',stroke:'#2b2622','stroke-width':2,transform:'translate(0,-12) scale(0.65)'});
+    doll.groups.hat.append(sp);setTimeout(()=>sp.remove(),2600);};
   await drop;flight.onfinish=()=>bird.remove();}
 
 // ---------- fx overlays (triggered by keyframes with an `fx` field) ----------
