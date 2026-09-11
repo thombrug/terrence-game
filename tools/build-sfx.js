@@ -27,6 +27,18 @@ const SFX={
   oef_4:  ['very short breathy grunt, air knocked out of a man by a punch to the belly, soft uh, cartoon, no words',0.5],
   oef_5:  ['quick winded exhale, oof with no f, breath punched out, short, comedic',0.5],
   oef_6:  ['tiny wheeze, man gets hit in the stomach, single short huh, cartoon',0.5],
+  // new gags (2026-09-11)
+  bird_1:  ['cartoon crow caw, single loud kaaa, comedic, short',0.8],
+  bird_2:  ['cartoon seagull squawk, single, short, comedic',0.8],
+  bonk:    ['cartoon bonk, hollow coconut hit on a head, single, short',0.5],
+  moo:     ['cartoon cow moo, single, comedic, short',1.2],
+  oink:    ['cartoon pig oink oink, short, comedic',0.8],
+  baa:     ['cartoon sheep baa, single, comedic',1.0],
+  sparkle: ['handheld sparkler fizzing and crackling, fireworks, continuous, bright',3.0],
+  whoosh:  ['big fire whoosh, flamethrower burst, short, cartoon',1.0],
+  // dance music, same length as the dance (10 s at 8 fps x 80 frames)
+  disco:   ['upbeat funky 70s disco groove, four on the floor drums, slap bass, wah guitar, cheerful, instrumental',10],
+  jig:     ['fast irish jig, fiddle and tin whistle and bodhran, riverdance style, upbeat, instrumental',10],
 };
 // file name -> text spoken by the game's voice (short, in character)
 const YELPS={
