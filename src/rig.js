@@ -158,6 +158,7 @@ const SFX=(()=>{
     baa:()=>sweep('sawtooth',420,300,0.6,0.15),
     sparkle:()=>burst(2.5,'highpass',5000,0.15),
     whoosh:()=>{burst(0.6,'lowpass',900,0.9);sweep('sawtooth',200,60,0.6,0.2);},
+    snicker:()=>{for(let i=0;i<3;i++)sweep('square',700,520,0.09,0.12,i*0.13);},
     disco:()=>{}, jig:()=>{},   // music: mp3 only, silent without one
   };
   const files={};let base='sounds/';
@@ -314,7 +315,7 @@ function makeDefaultLib(){
       F(2,{head:{r:0},mouth:0,eyes:0,lIris:{x:-5},rIris:{x:5}}),F(2,base)]),
     // farm animal cameo: looks left at it, startled, then giggles (looped by the game while the animal is on screen)
     bonus_animal:A(6,[F(4,{head:{r:-18},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(3,{head:{r:-22},mouth:4,eyes:0,lIris:{x:-6},rIris:{x:-6},root:{y:-6}}),
-      F(6,{head:{r:-12},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(5,{head:{r:6},mouth:3,eyes:2}),F(4,{head:{r:-6},mouth:2,eyes:2}),F(2,base)]),
+      F(6,{head:{r:-12},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(5,{head:{r:6},mouth:3,eyes:2},'snicker'),F(4,{head:{r:-6},mouth:2,eyes:2}),F(2,base)]),
     // roman candles: arms out, hips sway, then one torch behind the bum, toot, flame jet
     slap_sparklers:(()=>{const arms={lUpper:{r:90},rUpper:{r:-90},lLower:{r:0},rLower:{r:0},lHand:{r:-90},rHand:{r:90},root:{x:30}};   // straight out, torches upright; body shifted right so the left hand stays on screen
       const sway=d=>({...arms,root:{x:30+6*d},torso:{r:8*d},head:{r:-6*d},lThigh:{r:-8*d},rThigh:{r:-8*d},mouth:d>0?2:3});

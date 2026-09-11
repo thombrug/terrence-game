@@ -45,6 +45,8 @@ const YELPS={
   oef_1:'Euh!', oef_2:'Uh!', oef_3:'Hmpf!',
   sneeze_1:'Hatsjoe!', sneeze_2:'Hatsjie!',
   au_1:'Au!', au_2:'Auw!', au_3:'Au au au!',
+  // snickering when the farm animal poops (eleven_v3 audio tags make real laughs instead of spoken "haha")
+  snicker_1:'[giggles] Hihihi!', snicker_2:'[laughs] Hèhèhè!', snicker_3:'[mischievously] Hihi... [laughs]',
 };
 const force=process.argv.slice(2);
 const want=name=>force.length?force.includes(name):!fs.existsSync(path.join(dir,name+'.mp3'));
