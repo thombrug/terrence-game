@@ -256,8 +256,16 @@ async function animalCameo(){const kind=rnd(Object.keys(ANIMALS)),fx=$('fx'),a=d
   }
   a.remove();player.stop();doll.set(defaultPose());}
 
-// ---------- dance party (every 10th correct answer) ----------
-async function danceParty(){const d=pick('dance_');stars();music.play(d.music);setTimeout(stars,600);await playAsync(d);music.stop();stars();await speakAsync(rnd(PRAISE[cfg.lang]));}
+// ---------- party (when all 10 flags are filled) ----------
+async function waveFlags(){SFX.play('horn');flagEls().forEach((f,i)=>{const p=flagPt(i),tf=`translate(${p.x}px,${p.y}px)`,d=i%2?1:-1;
+  f.animate([{transform:tf+' rotate(0)'},{transform:tf+` rotate(${12*d}deg)`},{transform:tf+` rotate(${-12*d}deg)`},{transform:tf+' rotate(0)'}],{duration:300,iterations:2});});
+  await wait(700);}
+async function dropFlags(){const fl=flagEls();
+  for(let i=0;i<fl.length;i++){const p=flagPt(i);SFX.play('pop');
+    fl[i].animate([{transform:`translate(${p.x}px,${p.y}px) rotate(0)`,opacity:1},{transform:`translate(${p.x+10}px,${p.y+70}px) rotate(120deg)`,opacity:0}],{duration:500,easing:'ease-in'});
+    await wait(80);}
+  await wait(500);cfg.flags=0;saveCfg();paintFlags();}
+async function danceParty(){await waveFlags();const d=pick('dance_');stars();music.play(d.music);setTimeout(stars,600);await playAsync(d);music.stop();stars();await speakAsync(rnd(PRAISE[cfg.lang]));await dropFlags();}
 
 // ---------- poking him ----------
 $('rig').addEventListener('pointerdown',e=>{const head=e.target.closest('.j_head, .j_top');poke(head?'head':'belly');});
@@ -278,7 +286,7 @@ async function onTap(g,it){if(state!=='waiting'&&state!=='idling')return;const m
     const roll=Math.random();
     if(roll<0.10)await birdPoop();else if(roll<0.20)await animalCameo();else if(roll<0.32)await playAsync(pick('cheer_'));else await playAsync(pick('slap_'));
     await speakAsync(rnd(PRAISE[cfg.lang]));
-    if(score%10===0)await danceParty();
+    if(cfg.flags>=10)await danceParty();
     await wait(400);nextRound();
   }else{
     {const tf=g.getAttribute('transform').replace(/translate\((\d+),(\d+)\)/,'translate($1px,$2px)');g.animate([{transform:tf+' rotate(0)'},{transform:tf+' rotate(-12)'},{transform:tf+' rotate(12)'},{transform:tf+' rotate(0)'}],{duration:400});}
