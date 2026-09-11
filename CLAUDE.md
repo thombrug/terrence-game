@@ -46,10 +46,10 @@ Start overlay ("Spelen!") unlocks audio. Rounds cycle `letter, letter, number, l
 Touch-first editor. Drag the white dot at the end of a bone and it follows your finger; big dot at hips moves the body; irises and hat are move-joints. Buttons for mouth states/eyes, "Say it" test, keyframe timeline with hold + sound per frame, fps, jerky/tween, save to library, download animations.json. Pre-loaded with all default animations for tuning.
 
 ## Where we left off / next steps
-1. DONE (2026-09-11): voice + sound effects both come from ElevenLabs (free plan, key in , loaded by tools/env.js). Custom voice "Nederlandse terrence V1" made with Voice Design in the ElevenLabs web UI (API voice design is paid-only). Model  + ; single letters are sent as "A." (config ) — plain "A" on multilingual_v2 came out English. Sound effects via  (tools/build-sfx.js). Build output is  (GitHub Pages only allows / or /docs). Default "Gekke stem" rate 1.05.
+1. DONE (2026-09-11): voice + sound effects both come from ElevenLabs (free plan, key in `.env`, loaded by tools/env.js). Custom voice "Nederlandse terrence V1" made with Voice Design in the ElevenLabs web UI (API voice design is paid-only). Model `eleven_v3` + `language_code: nl`; single letters are sent as "A." (config `letters.suffix`) — plain "A" on multilingual_v2 came out English. Sound effects via `npm run sfx` (tools/build-sfx.js). Build output is `docs/` (GitHub Pages only allows / or /docs). Default "Gekke stem" rate 1.05.
 2. Free-plan limits: legacy library voices give 402 via API, only current premade voices and own voices work. Voice design/remix via API gives 403.
-3. Tune animations in the studio — faceplant and slip poses were expected to need the most work. Export →  → rebuild.
-4. Ideas not built yet: photo heads (the  and  groups are clipped halves designed so a photo can be dropped into each), a Phillip character, more  gags, letters of the kids' own names as a level, sound preview button in the studio.
+3. Tune animations in the studio — faceplant and slip poses were expected to need the most work. Export → `animations.json` → rebuild.
+4. Ideas not built yet: photo heads (the `top` and `head` groups are clipped halves designed so a photo can be dropped into each), a Phillip character, more `slap_*` gags, letters of the kids' own names as a level, sound preview button in the studio.
 
 ## Conventions
 - Single-file outputs; no build framework, no bundler, no dependencies. Node 18+ only for the two scripts.
