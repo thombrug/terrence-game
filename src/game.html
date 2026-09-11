@@ -117,7 +117,7 @@ cfg.flags=Math.min(10,Math.max(0,+cfg.flags||0));drawSlinger();
 $('gear').onclick=()=>{state='paused';player.stop();$('setNames').value=cfg.names.join(', ');$('setLang').value=cfg.lang;$('setKey').value=cfg.key;$('setVoice').value=cfg.voiceId;$('setRate').value=cfg.rate;$('rateVal').textContent=cfg.rate+'×';$('animInfo').textContent=Object.keys(lib).length+' animaties geladen';$('settings').style.display='flex';};
 $('setFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>$('setJson').value=t);};
 $('setSave').onclick=()=>{cfg.names=$('setNames').value.split(',').map(s=>s.trim()).filter(Boolean);if(!cfg.names.length)cfg.names=['Mama','Papa'];cfg.lang=$('setLang').value;cfg.key=$('setKey').value.trim();cfg.voiceId=$('setVoice').value.trim();cfg.rate=+$('setRate').value;applyVoice();VOICE.cache={};saveCfg();
-  const t=$('setJson').value.trim();if(t){try{const d=JSON.parse(t);lib={...lib,...(d.animations||d)};try{localStorage.setItem('cutout-anims',JSON.stringify(d.animations||d));}catch(e){}}catch(e){alert('Dat is geen geldige JSON.');return;}}
+  const t=$('setJson').value.trim();if(t){try{const d=JSON.parse(t);lib={...lib,...(d.animations||d)};delete lib.slap_party;try{localStorage.setItem('cutout-anims',JSON.stringify(d.animations||d));}catch(e){}}catch(e){alert('Dat is geen geldige JSON.');return;}}
   $('settings').style.display='none';round=0;score=0;nextRound();};
 $('setRate').oninput=e=>$('rateVal').textContent=e.target.value+'×';
 $('setDefaults').onclick=()=>{lib=makeDefaultLib();try{localStorage.removeItem('cutout-anims');}catch(e){}$('setJson').value='';$('animInfo').textContent='Standaard animaties hersteld';};

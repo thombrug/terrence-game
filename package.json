@@ -7,6 +7,7 @@
     "build": "node tools/build.js",
     "serve": "npx --yes serve docs",
     "sfx": "node tools/build-sfx.js",
-    "voice-test": "node tools/voice-test.js"
+    "voice-test": "node tools/voice-test.js",
+    "check": "node tools/check-lib.js"
   }
 }

@@ -184,7 +184,7 @@ const SFX=(()=>{
     kiekeboe:()=>{sweep('square',500,700,0.12,0.15);sweep('square',600,450,0.25,0.15,0.2);},
     mmm:()=>sweep('sine',220,260,0.5,0.2),
     ohnee:()=>sweep('sine',400,220,0.6,0.2),
-    disco:()=>{}, jig:()=>{},   // music: mp3 only, silent without one
+    disco:()=>{}, jig:()=>{}, party:()=>{},   // music: mp3 only, silent without one
   };
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};

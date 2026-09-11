@@ -1,7 +1,7 @@
 // Sanity checks on the default animation library, no browser needed. Run: node tools/check-lib.js
 const fs=require('fs'),path=require('path');
 const src=fs.readFileSync(path.join(__dirname,'..','src','rig.js'),'utf8');
-const lib=new Function('module',src+';return makeDefaultLib();')({});
+const {SFX,PROPS,lib}=new Function('module',src+'\n;return {SFX,PROPS,lib:makeDefaultLib()};')({});
 const fail=[];const ok=(c,m)=>{if(!c)fail.push(m);};
 ok(!lib.slap_party,'slap_party should be gone (renamed to dance_party)');
 ok(lib.dance_party,'dance_party missing');
@@ -14,6 +14,9 @@ if(lib.dance_party){const d=lib.dance_party;
   ok(d.frames.some(f=>f.sound==='spin'),'no headspin sound');
   ok(d.frames.filter(f=>f.fx==='confetti').length>=4,'expected at least 4 confetti bursts');}
 for(const [k,a] of Object.entries(lib)){ok(a.frames.reduce((s,f)=>s+f.hold,0)>0,k+' has no frames');
-  if(k.startsWith('dance_'))ok(a.music,k+' has no music');}
+  if(k.startsWith('dance_'))ok(a.music,k+' has no music');
+  a.frames.forEach((f,i)=>{if(f.sound)ok(SFX.names.includes(f.sound),k+' frame '+i+' has unknown sound '+f.sound);});
+  if(a.music)ok(SFX.names.includes(a.music),k+' has unknown music '+a.music);
+  for(const p of a.props||[])ok(p in PROPS,k+' has unknown prop '+p);}
 if(fail.length){console.error('FAIL\n- '+fail.join('\n- '));process.exit(1);}
 console.log('OK: '+Object.keys(lib).length+' animations, dance_: '+Object.keys(lib).filter(k=>k.startsWith('dance_')).join(', '));
