@@ -242,6 +242,9 @@ function makeDefaultLib(){
   const A=(fps,frames,extra={})=>({fps,frames,...extra});   // extra: {props:[...], music:'disco'}
   // seq(fps,n,fn,extra): n frames of hold 1; fn(i) returns pose overrides plus optional sound/fx
   const seq=(fps,n,fn,extra)=>A(fps,Array.from({length:n},(_,i)=>{const o=fn(i);return {hold:1,sound:o.sound||'',fx:o.fx||'',pose:pose(o)};}),extra);
+  // SH(n,over,sound,fx,amp): n one-tick frames of the same pose with the bum wiggling left/right (fart shake)
+  const SH=(n,over,sound,fx,amp=4)=>Array.from({length:n},(_,i)=>{const d=i%2?1:-1;
+    return F(1,{...over,root:{...(over.root||{}),x:((over.root||{}).x||0)+d*amp},torso:{...(over.torso||{}),r:((over.torso||{}).r||0)+d*2}},i===0?sound:'',i===0?fx:'');});
   const base={};
   const armsUp={lUpper:{r:-160},rUpper:{r:160},lLower:{r:0},rLower:{r:0}};
   const crouch={root:{y:6},lThigh:{r:20},rThigh:{r:-20},lShin:{r:-35},rShin:{r:35},torso:{r:0}};
@@ -250,7 +253,7 @@ function makeDefaultLib(){
     idle_breathe:A(4,[F(6,base),F(5,{torso:{y:1},head:{y:-1,r:1}}),F(4,base),F(1,{eyes:1}),F(2,base)]),
     idle_scratch:A(6,[F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3}}),
       F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3},eyes:1}),F(3,base)]),
-    idle_fart:A(6,[F(3,{torso:{r:8},head:{r:8},eyes:1}),F(1,{torso:{r:8},head:{r:8},eyes:2,root:{y:-6},mouth:1},'fart'),F(2,{torso:{r:8},head:{r:8},eyes:1,mouth:1}),
+    idle_fart:A(6,[F(3,{torso:{r:8},head:{r:8},eyes:1}),F(1,{torso:{r:8},head:{r:8},eyes:2,root:{y:-6},mouth:1},'fart'),...SH(3,{torso:{r:8},head:{r:8},eyes:1,mouth:1}),
       F(4,{head:{r:28},mouth:2,lIris:{x:3},rIris:{x:3}}),F(2,{head:{r:-6},mouth:0}),F(2,base)]),
     idle_eye_drift:A(3,[F(3,base),F(3,{lIris:{x:-2}}),F(3,{lIris:{x:-4}}),F(3,{lIris:{x:-6,y:1}}),F(3,{lIris:{x:-8,y:2}}),F(3,{lIris:{x:-9,y:3}}),F(1,{lIris:{x:-9,y:3},eyes:1}),F(2,base)]),
     mild_sigh:A(4,[F(3,{torso:{y:-2},head:{y:-2},mouth:1}),F(4,{torso:{r:4,y:2},head:{r:8},lUpper:{r:-10},rUpper:{r:10},mouth:0,eyes:1}),F(2,base)]),
@@ -264,7 +267,7 @@ function makeDefaultLib(){
     // little hop, bum out, arms the other way, eyes squeezed '><'
     slap_toot:A(8,[F(2,{...crouch,mouth:0,eyes:1}),
       F(1,{root:{y:-14,x:6},torso:{r:-10},head:{r:-5},lThigh:{r:24},rThigh:{r:20},lShin:{r:-10},rShin:{r:-10},lUpper:{r:-95},rUpper:{r:-70},lLower:{r:-20},rLower:{r:-30},mouth:4,eyes:2,hat:{y:-6}},'fart'),
-      F(3,{root:{y:-22,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:30},rThigh:{r:26},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-110},rUpper:{r:-85},lLower:{r:-25},rLower:{r:-35},mouth:4,eyes:2,hat:{y:-12,r:8}}),
+      ...SH(4,{root:{y:-22,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:30},rThigh:{r:26},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-110},rUpper:{r:-85},lLower:{r:-25},rLower:{r:-35},mouth:4,eyes:2,hat:{y:-12,r:8}}),
       F(2,{root:{y:-10},torso:{r:-10},head:{r:-4},lThigh:{r:16},rThigh:{r:14},lUpper:{r:-60},rUpper:{r:-40},mouth:1,eyes:2}),
       F(2,{...crouch,mouth:1,eyes:0,lIris:{x:-3},rIris:{x:3}}),F(2,{mouth:0,eyes:1}),F(2,base)]),
     slap_split:A(8,[F(2,{...crouch,mouth:1}),F(2,{root:{y:-50},...armsUp,mouth:4,lThigh:{r:20},rThigh:{r:-20},lShin:{r:-30},rShin:{r:30}},'boing'),
@@ -274,7 +277,7 @@ function makeDefaultLib(){
       F(2,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-80},rUpper:{r:80},lLower:{r:-40},rLower:{r:40},mouth:4,eyes:3,torso:{r:4}},'au'),
       F(3,{root:{y:34},lThigh:{r:88},rThigh:{r:-88},lShin:{r:0},rShin:{r:0},lFoot:{r:-90},rFoot:{r:90},lUpper:{r:-20},rUpper:{r:20},lLower:{r:-80},rLower:{r:80},mouth:1,eyes:2,head:{r:8}}),
       F(2,{...crouch,mouth:0,eyes:1}),F(2,base)]),
-    slap_fart_launch:A(8,[F(3,{...crouch,eyes:1,torso:{r:6},head:{r:6}}),F(2,{root:{y:-30},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'fart'),
+    slap_fart_launch:A(8,[...SH(4,{...crouch,eyes:1,torso:{r:6},head:{r:6}},'','',2),F(2,{root:{y:-30},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'fart'),
       F(2,{root:{y:-75},...armsUp,mouth:4,torso:{r:15},lThigh:{r:-30},rThigh:{r:30}}),F(2,{root:{y:-95},...armsUp,mouth:4,torso:{r:-15},lThigh:{r:30},rThigh:{r:-30},hat:{y:-20,r:30}}),
       F(2,{root:{y:-60},...armsUp,mouth:1,torso:{r:10},hat:{y:-40,r:60}}),F(2,{root:{y:-20},mouth:1,eyes:1,hat:{y:-20,r:30}}),F(2,{...crouch,eyes:1},'thud'),F(3,base)]),
     // ball flies in from the right during the first frame (500 ms), bonks him, then the head spins
@@ -297,7 +300,7 @@ function makeDefaultLib(){
       F(3,{head:{r:5},mouth:0,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
     bonus_poop:A(8,[F(3,{head:{r:-12},mouth:1,lIris:{y:-3},rIris:{y:-3}},''),F(3,{head:{r:-12},mouth:2,lIris:{y:-3},rIris:{y:-3}}),
       F(3,{head:{r:0},mouth:4,eyes:1},'splat'),F(3,{head:{r:10},mouth:0,eyes:1}),F(3,{head:{r:10},mouth:1,lIris:{x:-6},rIris:{x:6}}),F(2,base)]),
-    slap_bigfart:A(8,[F(3,{...crouch,eyes:1,torso:{r:6}}),F(2,{root:{y:-40},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'fart'),
+    slap_bigfart:A(8,[...SH(4,{...crouch,eyes:1,torso:{r:6}},'','',2),F(2,{root:{y:-40},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'fart'),
       F(2,{root:{y:-90},...armsUp,mouth:4,torso:{r:40},hat:{y:-30,r:60}}),F(2,{root:{y:-60},...armsUp,mouth:4,torso:{r:70},hat:{y:-60,x:40,r:120}}),
       F(4,{...flat(1),lUpper:{r:-90},rUpper:{r:-90},mouth:4,eyes:1,hat:{y:-40,x:60,r:180}},'thud'),F(3,{torso:{r:25},root:{y:25},head:{r:-15},mouth:1,lIris:{x:-5},rIris:{x:5},lThigh:{r:-60},rThigh:{r:-60},lShin:{r:70},rShin:{r:70}}),F(2,base)]),
     mild_shrug:A(6,[F(3,{lUpper:{r:-70},rUpper:{r:70},lLower:{r:-60},rLower:{r:60},head:{r:8},mouth:1,torso:{y:-2}}),F(3,{lUpper:{r:-70},rUpper:{r:70},lLower:{r:-60},rLower:{r:60},head:{r:-8},mouth:0,torso:{y:-2}}),F(2,base)]),
@@ -305,7 +308,7 @@ function makeDefaultLib(){
     mild_scratch_head:A(6,[F(3,{rUpper:{r:-160},rLower:{r:-50},head:{r:-6},mouth:1}),F(2,{rUpper:{r:-160},rLower:{r:-70},head:{r:-6},mouth:1}),F(2,{rUpper:{r:-160},rLower:{r:-50},head:{r:-6},mouth:0}),F(2,base)]),
     // poke on the belly: quick surprised toot
     tap_belly:A(8,[F(1,{torso:{y:3},mouth:1,eyes:0,lIris:{y:2},rIris:{y:2}}),F(1,{root:{y:-8,x:4},torso:{r:-10},head:{r:-6},lUpper:{r:-80},rUpper:{r:-60},mouth:4,eyes:2},'fart'),
-      F(2,{root:{y:-4,x:4},torso:{r:-8},head:{r:-4},lUpper:{r:-70},rUpper:{r:-50},mouth:4,eyes:2}),F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
+      ...SH(3,{root:{y:-4,x:4},torso:{r:-8},head:{r:-4},lUpper:{r:-70},rUpper:{r:-50},mouth:4,eyes:2}),F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
     // poke on the head: dazed, stars circle the head, eyes squeezed
     tap_head:A(8,[F(1,{head:{y:4},mouth:1},'bonk','headstars'),F(3,{head:{r:-14},mouth:1,eyes:2}),F(3,{head:{r:12},mouth:1,eyes:2}),F(3,{head:{r:-8},mouth:2,eyes:2}),
       F(2,{head:{r:0},mouth:0,eyes:0,lIris:{x:-5},rIris:{x:5}}),F(2,base)]),
@@ -313,12 +316,12 @@ function makeDefaultLib(){
     bonus_animal:A(6,[F(4,{head:{r:-18},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(3,{head:{r:-22},mouth:4,eyes:0,lIris:{x:-6},rIris:{x:-6},root:{y:-6}}),
       F(6,{head:{r:-12},mouth:1,lIris:{x:-6},rIris:{x:-6}}),F(5,{head:{r:6},mouth:3,eyes:2}),F(4,{head:{r:-6},mouth:2,eyes:2}),F(2,base)]),
     // roman candles: arms out, hips sway, then one torch behind the bum, toot, flame jet
-    slap_sparklers:(()=>{const arms={lUpper:{r:-95},rUpper:{r:95},lLower:{r:0},rLower:{r:0},lHand:{r:95},rHand:{r:-95}};
-      const sway=d=>({...arms,root:{x:6*d},torso:{r:8*d},head:{r:-6*d},lThigh:{r:-8*d},rThigh:{r:-8*d},mouth:d>0?2:3});
+    slap_sparklers:(()=>{const arms={lUpper:{r:90},rUpper:{r:-90},lLower:{r:0},rLower:{r:0},lHand:{r:-90},rHand:{r:90},root:{x:30}};   // straight out, torches upright; body shifted right so the left hand stays on screen
+      const sway=d=>({...arms,root:{x:30+6*d},torso:{r:8*d},head:{r:-6*d},lThigh:{r:-8*d},rThigh:{r:-8*d},mouth:d>0?2:3});
       const bum={root:{y:-6,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:26},rThigh:{r:22},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-100},lLower:{r:-20},lHand:{r:100},rUpper:{r:38},rLower:{r:0},rHand:{r:-128}};
       return A(8,[F(1,{...arms,mouth:1},'sparkle','sparks'),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),F(3,sway(1)),F(3,sway(-1)),
         F(3,{...arms,mouth:1,eyes:0,lIris:{x:4},rIris:{x:4}}),F(3,{...bum,mouth:0,eyes:1}),
-        F(1,{...bum,mouth:4,eyes:2},'fart'),F(4,{...bum,mouth:4,eyes:2,hat:{y:-10,r:10}},'whoosh','flame'),F(3,{...bum,mouth:1,eyes:2}),
+        F(1,{...bum,mouth:4,eyes:2},'fart'),...SH(4,{...bum,mouth:4,eyes:2,hat:{y:-10,r:10}},'whoosh','flame',3),F(3,{...bum,mouth:1,eyes:2}),
         F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)],{props:['torchL','torchR']});})(),
     // 10 s dances for every 10th correct answer (80 frames at 8 fps), music of the same length
     dance_riverdance:seq(8,80,i=>{const ph=i%8,stiff={lUpper:{r:4},rUpper:{r:-4},lLower:{r:0},rLower:{r:0},mouth:0,eyes:0,lIris:{x:2},rIris:{x:-2}};
