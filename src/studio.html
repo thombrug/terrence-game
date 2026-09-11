@@ -175,7 +175,7 @@ $('btnSay').onclick=()=>{SFX.unlock();speak($('sayText').value,doll,{lang:'en-GB
 
 // keyframes
 let keys=[],cur=-1;
-const player=makePlayer({set(p){doll.set(p);refresh();},setProps(l){doll.setProps(l);}});
+const player=makePlayer({set(p){doll.set(p);refresh();},setProps(l){doll.setProps(l);},setFront(f){doll.setFront(f);}});
 SFX.names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;$('selSound').append(o);});
 function renderFrames(){const box=$('frames');box.innerHTML='';
   keys.forEach((k,i)=>{const d=document.createElement('div');d.className='frame'+(i===cur?' cur':'');

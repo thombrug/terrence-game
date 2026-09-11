@@ -61,7 +61,7 @@
   <label>API key<input id="setKey" type="password" placeholder="xi-..."></label>
   <label>Voice ID<input id="setVoice" placeholder="bijv. 21m00Tcm4TlvDq8ikWAM"></label>
   <label>Gekke stem <input id="setRate" type="range" min="0.9" max="1.6" step="0.05"> <span id="rateVal"></span></label>
-  <p class="hint">Zonder key gebruikt het spel de stem van de telefoon. Geluiden: zet mp3's in een map <code>sounds/</code> naast dit bestand (fart, bigfart, boing, thud, slip, whistle, splat, sneeze, ding, pop, spin). Stemclips kunnen ook als bestand: <code>voice/nl/mama.mp3</code>, <code>voice/nl/a.mp3</code>, <code>voice/nl/ja_goed_zo.mp3</code> …</p>
+  <p class="hint">Zonder key gebruikt het spel de stem van de telefoon. Geluiden: zet mp3's in een map <code>sounds/</code> naast dit bestand (fart, boing, thud, slip, splat, sneeze, ding, pop, spin, horn, snore, slurp …). Stemclips kunnen ook als bestand: <code>voice/nl/mama.mp3</code>, <code>voice/nl/a.mp3</code>, <code>voice/nl/ja_goed_zo.mp3</code> …</p>
   <label>Animaties (plak animations.json)<textarea id="setJson"></textarea></label>
   <input type="file" id="setFile" accept=".json,application/json">
   <p class="hint" id="animInfo"></p>
@@ -139,7 +139,7 @@ function hideBubbles(){$('bubbles').innerHTML='';}
 function stars(){const fx=$('fx');for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2,d=90+Math.random()*80;
   const s=el('path',{d:'M0,-10 L3,-3 L10,-3 L4,2 L6,9 L0,5 L-6,9 L-4,2 L-10,-3 L-3,-3 Z',fill:rnd(['#ffd400','#ff7a00','#fff','#c8322b']),stroke:'#2b2622','stroke-width':1.5});
   fx.append(s);s.animate([{transform:'translate(126px,300px) scale(.3)',opacity:1},{transform:`translate(${126+Math.cos(a)*d}px,${300+Math.sin(a)*d}px) rotate(${Math.random()*360}deg) scale(1.2)`,opacity:0}],{duration:900,easing:'ease-out'}).onfinish=()=>s.remove();}}
-async function birdPoop(){const fx=$('fx');const bird=el('g');
+function flyBird(){const fx=$('fx');const bird=el('g');
   bird.append(el('ellipse',{cx:0,cy:0,rx:14,ry:9,fill:'#2b2622'}));                    // body
   const wing=el('path',{d:'M-6,-2 Q0,-22 10,-6',fill:'#2b2622'});bird.append(wing);   // wing
   bird.append(el('circle',{cx:13,cy:-4,r:6,fill:'#2b2622'}));                            // head
@@ -149,6 +149,8 @@ async function birdPoop(){const fx=$('fx');const bird=el('g');
   const flight=bird.animate([{transform:'translate(-40px,50px) scale(2)'},{transform:'translate(420px,30px) scale(2)'}],{duration:3000,easing:'linear',fill:'forwards'});
   flight.onfinish=()=>bird.remove();   // hook it up now: the poop animation outlasts the flight
   wing.animate([{transform:'scaleY(1)'},{transform:'scaleY(-0.6)'},{transform:'scaleY(1)'}],{duration:260,iterations:12});
+  return bird;}
+async function birdPoop(){const fx=$('fx');flyBird();
   await wait(1100);const blob=el('ellipse',{rx:8,ry:6,fill:'#fff',stroke:'#2b2622','stroke-width':2});fx.append(blob);
   const drop=playAsync(lib.bonus_poop);
   const hit=jointXY('hat',0,-10);   // aim at the hat as he looks up
@@ -190,6 +192,17 @@ FX.discoball=(k,anim)=>{const fx=$('fx'),g=el('g');g.append(el('line',{x1:0,y1:-
   ball.animate([{transform:'scaleX(1)'},{transform:'scaleX(-1)'},{transform:'scaleX(1)'}],{duration:1200,iterations:Infinity,easing:'steps(8)'});
   g.animate([{transform:'translate(280px,-60px)'},{transform:'translate(280px,110px)'}],{duration:600,easing:'steps(6)',fill:'forwards'});
   setTimeout(()=>g.remove(),player.duration(anim));};
+
+FX.bird=()=>flyBird();   // just the fly-by with a caw (wakes him up in slap_sleep)
+FX.confetti=()=>{const fx=$('fx');for(let i=0;i<40;i++){const c=el('rect',{width:9,height:6,rx:1,fill:rnd(['#ffd400','#ff7a00','#c8322b','#3b8bff','#3bff5c','#fff']),stroke:'#2b2622','stroke-width':1});fx.append(c);
+  const x=Math.random()*360,drift=(Math.random()-0.5)*90;
+  c.animate([{transform:`translate(${x}px,-20px) rotate(0deg)`},{transform:`translate(${x+drift}px,500px) rotate(${(Math.random()-0.5)*1080}deg)`}],{duration:1800+Math.random()*1400,delay:Math.random()*900,easing:'steps(24)',fill:'both'}).onfinish=()=>c.remove();}};
+FX.zzz=()=>{const fx=$('fx'),h=jointXY('head',24,-56);const z=el('text',{'font-size':26,'font-weight':900,'font-family':"'Arial Rounded MT Bold',Arial,sans-serif",fill:'#2b2622',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});z.textContent='Z';fx.append(z);
+  z.animate([{transform:`translate(${h.x}px,${h.y}px) scale(0.5)`,opacity:1},{transform:`translate(${h.x+34}px,${h.y-80}px) scale(1.5)`,opacity:0}],{duration:1500,easing:'steps(10)',fill:'forwards'}).onfinish=()=>z.remove();};
+FX.scoopdrop=()=>{const fx=$('fx');doll.groups.props.scoop.style.display='none';const p=jointXY('rHand',0,-16),f=jointXY('rFoot',6,-4);
+  const b=el('circle',{r:21,fill:'#f7b7cf',stroke:'#2b2622','stroke-width':2.5});fx.append(b);
+  b.animate([{transform:`translate(${p.x}px,${p.y}px)`},{transform:`translate(${f.x}px,${f.y}px)`}],{duration:450,easing:'ease-in',fill:'forwards'}).onfinish=()=>{b.remove();SFX.play('splat');
+    fx.append(el('path',{class:'stay',d:'M-22,0 Q-16,-12 -6,-6 Q0,-16 6,-6 Q16,-14 22,0 Q14,6 6,4 Q0,10 -6,4 Q-14,8 -22,0 Z',fill:'#f7b7cf',stroke:'#2b2622','stroke-width':2,transform:`translate(${f.x},${f.y}) scale(1.3)`}));};};
 
 // ---------- farm animal cameo ----------
 const ANIMALS={   // cutout animals facing right, origin = feet on the ground

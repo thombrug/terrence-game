@@ -36,6 +36,11 @@ const SFX={
   baa:     ['cartoon sheep baa, single, comedic',1.0],
   sparkle: ['handheld sparkler fizzing and crackling, fireworks, continuous, bright',3.0],
   whoosh:  ['big fire whoosh, flamethrower burst, short, cartoon',1.0],
+  // party, ice cream, sleep gags
+  horn:    ['cartoon party horn blower toot, single short honk, birthday party, comedic',0.8],
+  slurp:   ['cartoon lick, short wet slurp, single, comedic',0.5],
+  snore_1: ['cartoon snoring, one loud rasping inhale and a whistling exhale, comedic',1.4],
+  snore_2: ['cartoon snore, single deep rumbling inhale then a soft puff exhale, comedic',1.4],
   // dance music, same length as the dance (10 s at 8 fps x 80 frames)
   disco:   ['upbeat funky 70s disco groove, four on the floor drums, slap bass, wah guitar, cheerful, instrumental',10],
   jig:     ['fast irish jig, fiddle and tin whistle and bodhran, riverdance style, upbeat, instrumental',10],
@@ -47,6 +52,9 @@ const YELPS={
   au_1:'Au!', au_2:'Auw!', au_3:'Au au au!',
   // snickering when the farm animal poops (eleven_v3 audio tags make real laughs instead of spoken "haha")
   snicker_1:'[giggles] Hihihi!', snicker_2:'[laughs] Hèhèhè!', snicker_3:'[mischievously] Hihi... [laughs]',
+  // peekaboo, ice cream, sleep
+  kiekeboe_1:'Kiekeboe!', kiekeboe_2:'[playfully] Kiekeboe!',
+  yawn_1:'[yawning] Aaaahhh.', mmm_1:'[happily] Mmm!', ohnee_1:'[sad] Oh nee...',
 };
 const force=process.argv.slice(2);
 const want=name=>force.length?force.includes(name):!fs.existsSync(path.join(dir,name+'.mp3'));
