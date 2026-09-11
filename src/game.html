@@ -103,7 +103,7 @@ delete lib.slap_party;   // renamed to dance_party; drop it from any older anima
 function saveCfg(){try{localStorage.setItem('cutout-game',JSON.stringify(cfg));}catch(e){}}
 // ---------- slinger: 10 flags fill up towards the party ----------
 const FLAG_COLORS=['#ffd400','#ff7a00','#c8322b','#5ea24a','#3a7bd5'];
-const ROPE={a:[-10,102],c:[180,198],b:[370,102]};   // quadratic curve; control y 198 puts the lowest point at y 150, just above the hat (y 160 at rest)
+const ROPE={a:[-10,102],c:[180,160],b:[370,102]};   // quadratic curve; control y 160 puts the lowest point at y 131, so the flag tips (26 tall) clear the hat (top y 160 at rest)
 function ropePt(t){const {a,c,b}=ROPE,u=1-t;return {x:u*u*a[0]+2*u*t*c[0]+t*t*b[0],y:u*u*a[1]+2*u*t*c[1]+t*t*b[1]};}
 const flagPt=i=>ropePt(0.05+i*0.1);
 const flagEls=()=>[...$('slinger').querySelectorAll('.flag')];
