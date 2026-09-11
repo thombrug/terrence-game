@@ -91,6 +91,7 @@
     <button class="tog mouth" data-m="3">Open ↷</button>
     <button class="tog mouth" data-m="4">Loud!</button>
     <button class="tog" id="btnEyes">Eyes closed</button>
+    <button class="tog" id="btnSquint">Eyes &gt;&lt;</button>
   </div>
   <div class="row" style="padding:0">
     <input type="text" id="sayText" value="Hello there, FRIEND!" style="flex:1;min-width:140px">
@@ -158,14 +159,15 @@ const endDrag=()=>drag=null;svg.addEventListener('pointerup',endDrag);svg.addEve
 
 function refresh(){doll.apply();syncSliders();
   document.querySelectorAll('.mouth').forEach(b=>b.classList.toggle('on',+b.dataset.m===(doll.pose.mouth||0)));
-  $('btnEyes').classList.toggle('on',!!doll.pose.eyes);}
+  $('btnEyes').classList.toggle('on',doll.pose.eyes===1);$('btnSquint').classList.toggle('on',doll.pose.eyes===2);}
 function select(id){sel=id;document.querySelectorAll('.handle').forEach(h=>h.classList.toggle('sel',h.dataset.joint===id));$('jointName').textContent=PRETTY[id];syncSliders();}
 function syncSliders(){if(!sel)return;const p=doll.pose[sel];$('sRot').value=p.r;$('vRot').textContent=p.r;$('sX').value=p.x;$('vX').textContent=p.x;$('sY').value=p.y;$('vY').textContent=p.y;}
 for(const[s,k]of[['sRot','r'],['sX','x'],['sY','y']])$(s).addEventListener('input',e=>{if(!sel)return;doll.pose[sel][k]=+e.target.value;refresh();});
 $('btnReset').onclick=()=>{doll.set(defaultPose());refresh();};
 $('chkHandles').onchange=e=>$('stage').classList.toggle('hide-handles',!e.target.checked);
 document.querySelectorAll('.mouth').forEach(b=>b.onclick=()=>{doll.pose.mouth=+b.dataset.m;refresh();});
-$('btnEyes').onclick=()=>{doll.pose.eyes=doll.pose.eyes?0:1;refresh();};
+$('btnEyes').onclick=()=>{doll.pose.eyes=doll.pose.eyes===1?0:1;refresh();};
+$('btnSquint').onclick=()=>{doll.pose.eyes=doll.pose.eyes===2?0:2;refresh();};
 $('btnSay').onclick=()=>{SFX.unlock();speak($('sayText').value,doll,{lang:'en-GB',done:refresh});};
 
 // keyframes

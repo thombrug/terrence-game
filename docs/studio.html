@@ -91,6 +91,7 @@
     <button class="tog mouth" data-m="3">Open ↷</button>
     <button class="tog mouth" data-m="4">Loud!</button>
     <button class="tog" id="btnEyes">Eyes closed</button>
+    <button class="tog" id="btnSquint">Eyes &gt;&lt;</button>
   </div>
   <div class="row" style="padding:0">
     <input type="text" id="sayText" value="Hello there, FRIEND!" style="flex:1;min-width:140px">
@@ -193,6 +194,11 @@ function buildRig(container){
   const lids=el('g',{class:'lids'});
   for(const s of[-1,1])lids.append(el('ellipse',{cx:s*12,cy:-30,rx:9,ry:11,fill:'#f2c9a0',...OUT}));
   groups.top.insertBefore(lids,groups.hat);groups.lids=lids;
+  // squint '><' drawn over the closed lids (eyes=2)
+  const squint=el('g',{class:'squint'});
+  squint.append(el('path',{d:'M-19,-37 L-8,-30 L-19,-23',fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  squint.append(el('path',{d:'M19,-37 L8,-30 L19,-23',fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  groups.top.insertBefore(squint,groups.hat);groups.squint=squint;
   return groups;
 }
 function applyPose(groups,pose){
@@ -200,6 +206,7 @@ function applyPose(groups,pose){
     if(id==='top'){const m=MOUTH[pose.mouth||0];p={x:m[0],y:m[1],r:m[2]};}
     groups[id].setAttribute('transform',`translate(${j.px+p.x},${j.py+p.y}) rotate(${p.r})`);}
   groups.lids.style.display=pose.eyes?'':'none';
+  groups.squint.style.display=pose.eyes===2?'':'none';
 }
 function createDoll(container){const groups=buildRig(container);const d={groups,pose:defaultPose(),apply(){applyPose(groups,d.pose);},set(p){d.pose=clone(p);d.apply();}};d.apply();return d;}
 
@@ -241,12 +248,15 @@ const SFX=(()=>{
   };
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};
-  function play(n){if(!S[n])return;if(files[n]===undefined&&baked()[n]){files[n]=new Audio(baked()[n]);}const f=files[n];
+  // A sound can have variants: fart.mp3, fart_1.mp3, fart_2.mp3 ... one is picked at random each play.
+  function variants(n){const b=baked();const re=new RegExp('^'+n+'(_\d+)?$');const v=Object.keys(b).filter(k=>re.test(k));return v.length?v:[n];}
+  function play(n){if(!S[n])return;const vs=variants(n);const k=vs[Math.floor(Math.random()*vs.length)];
+    if(files[k]===undefined&&baked()[k]){files[k]=new Audio(baked()[k]);}const f=files[k];
     if(f===false){try{S[n]();}catch(e){}return;}
     if(f){const a=f.cloneNode();a.volume=1;a.play().catch(()=>{});return;}
-    const a=new Audio(base+n+'.mp3');files[n]=undefined;
-    a.addEventListener('canplaythrough',()=>{files[n]=a;a.play().catch(()=>{});},{once:true});
-    a.addEventListener('error',()=>{files[n]=false;try{S[n]();}catch(e){}},{once:true});
+    const a=new Audio(base+k+'.mp3');files[k]=undefined;
+    a.addEventListener('canplaythrough',()=>{files[k]=a;a.play().catch(()=>{});},{once:true});
+    a.addEventListener('error',()=>{files[k]=false;try{S[n]();}catch(e){}},{once:true});
     a.load();}
   return {names:Object.keys(S),play,unlock:ac,setBase(b){base=b;for(const k in files)delete files[k];}};
 })();
@@ -308,7 +318,7 @@ function makeDefaultLib(){
     idle_breathe:A(4,[F(6,base),F(5,{torso:{y:1},head:{y:-1,r:1}}),F(4,base),F(1,{eyes:1}),F(2,base)]),
     idle_scratch:A(6,[F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3}}),
       F(2,{rUpper:{r:150},rLower:{r:40},head:{r:-6},torso:{r:-3}}),F(2,{rUpper:{r:150},rLower:{r:60},head:{r:-6},torso:{r:-3},eyes:1}),F(3,base)]),
-    idle_fart:A(6,[F(3,{torso:{r:8},head:{r:8},eyes:1}),F(1,{torso:{r:8},head:{r:8},eyes:1,root:{y:-6},mouth:1},'fart'),F(2,{torso:{r:8},head:{r:8},eyes:1,mouth:1}),
+    idle_fart:A(6,[F(3,{torso:{r:8},head:{r:8},eyes:1}),F(1,{torso:{r:8},head:{r:8},eyes:2,root:{y:-6},mouth:1},'fart'),F(2,{torso:{r:8},head:{r:8},eyes:1,mouth:1}),
       F(4,{head:{r:28},mouth:2,lIris:{x:3},rIris:{x:3}}),F(2,{head:{r:-6},mouth:0}),F(2,base)]),
     idle_eye_drift:A(3,[F(3,base),F(3,{lIris:{x:-2}}),F(3,{lIris:{x:-4}}),F(3,{lIris:{x:-6,y:1}}),F(3,{lIris:{x:-8,y:2}}),F(3,{lIris:{x:-9,y:3}}),F(1,{lIris:{x:-9,y:3},eyes:1}),F(2,base)]),
     mild_sigh:A(4,[F(3,{torso:{y:-2},head:{y:-2},mouth:1}),F(4,{torso:{r:4,y:2},head:{r:8},lUpper:{r:-10},rUpper:{r:10},mouth:0,eyes:1}),F(2,base)]),
@@ -319,6 +329,12 @@ function makeDefaultLib(){
     cheer_dance:A(8,[F(2,{torso:{r:-8},root:{y:-4},lUpper:{r:-120},rUpper:{r:60},head:{r:-8},mouth:2},'ding'),F(2,{torso:{r:8},root:{y:-4},lUpper:{r:-60},rUpper:{r:120},head:{r:8},mouth:3}),
       F(2,{torso:{r:-8},root:{y:-4},lUpper:{r:-120},rUpper:{r:60},head:{r:-8},mouth:2}),F(2,{torso:{r:8},root:{y:-4},lUpper:{r:-60},rUpper:{r:120},head:{r:8},mouth:3}),
       F(2,{torso:{r:-8},root:{y:-4},lUpper:{r:-120},rUpper:{r:60},head:{r:-8},mouth:2}),F(2,{torso:{r:8},root:{y:-4},lUpper:{r:-60},rUpper:{r:120},head:{r:8},mouth:3}),F(2,base)]),
+    // little hop, bum out, arms the other way, eyes squeezed '><'
+    slap_toot:A(8,[F(2,{...crouch,mouth:0,eyes:1}),
+      F(1,{root:{y:-14,x:6},torso:{r:-10},head:{r:-5},lThigh:{r:24},rThigh:{r:20},lShin:{r:-10},rShin:{r:-10},lUpper:{r:-95},rUpper:{r:-70},lLower:{r:-20},rLower:{r:-30},mouth:4,eyes:2,hat:{y:-6}},'fart'),
+      F(3,{root:{y:-22,x:10},torso:{r:-16},head:{r:-8},lThigh:{r:30},rThigh:{r:26},lShin:{r:-12},rShin:{r:-12},lUpper:{r:-110},rUpper:{r:-85},lLower:{r:-25},rLower:{r:-35},mouth:4,eyes:2,hat:{y:-12,r:8}}),
+      F(2,{root:{y:-10},torso:{r:-10},head:{r:-4},lThigh:{r:16},rThigh:{r:14},lUpper:{r:-60},rUpper:{r:-40},mouth:1,eyes:2}),
+      F(2,{...crouch,mouth:1,eyes:0,lIris:{x:-3},rIris:{x:3}}),F(2,{mouth:0,eyes:1}),F(2,base)]),
     slap_fart_launch:A(8,[F(3,{...crouch,eyes:1,torso:{r:6},head:{r:6}}),F(2,{root:{y:-30},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'bigfart'),
       F(2,{root:{y:-75},...armsUp,mouth:4,torso:{r:15},lThigh:{r:-30},rThigh:{r:30}}),F(2,{root:{y:-95},...armsUp,mouth:4,torso:{r:-15},lThigh:{r:30},rThigh:{r:-30},hat:{y:-20,r:30}}),
       F(2,{root:{y:-60},...armsUp,mouth:1,torso:{r:10},hat:{y:-40,r:60}}),F(2,{root:{y:-20},mouth:1,eyes:1,hat:{y:-20,r:30}}),F(2,{...crouch,eyes:1},'thud'),F(3,base)]),
@@ -382,14 +398,15 @@ const endDrag=()=>drag=null;svg.addEventListener('pointerup',endDrag);svg.addEve
 
 function refresh(){doll.apply();syncSliders();
   document.querySelectorAll('.mouth').forEach(b=>b.classList.toggle('on',+b.dataset.m===(doll.pose.mouth||0)));
-  $('btnEyes').classList.toggle('on',!!doll.pose.eyes);}
+  $('btnEyes').classList.toggle('on',doll.pose.eyes===1);$('btnSquint').classList.toggle('on',doll.pose.eyes===2);}
 function select(id){sel=id;document.querySelectorAll('.handle').forEach(h=>h.classList.toggle('sel',h.dataset.joint===id));$('jointName').textContent=PRETTY[id];syncSliders();}
 function syncSliders(){if(!sel)return;const p=doll.pose[sel];$('sRot').value=p.r;$('vRot').textContent=p.r;$('sX').value=p.x;$('vX').textContent=p.x;$('sY').value=p.y;$('vY').textContent=p.y;}
 for(const[s,k]of[['sRot','r'],['sX','x'],['sY','y']])$(s).addEventListener('input',e=>{if(!sel)return;doll.pose[sel][k]=+e.target.value;refresh();});
 $('btnReset').onclick=()=>{doll.set(defaultPose());refresh();};
 $('chkHandles').onchange=e=>$('stage').classList.toggle('hide-handles',!e.target.checked);
 document.querySelectorAll('.mouth').forEach(b=>b.onclick=()=>{doll.pose.mouth=+b.dataset.m;refresh();});
-$('btnEyes').onclick=()=>{doll.pose.eyes=doll.pose.eyes?0:1;refresh();};
+$('btnEyes').onclick=()=>{doll.pose.eyes=doll.pose.eyes===1?0:1;refresh();};
+$('btnSquint').onclick=()=>{doll.pose.eyes=doll.pose.eyes===2?0:2;refresh();};
 $('btnSay').onclick=()=>{SFX.unlock();speak($('sayText').value,doll,{lang:'en-GB',done:refresh});};
 
 // keyframes

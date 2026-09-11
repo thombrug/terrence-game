@@ -19,9 +19,9 @@ const af=path.join(root,'animations.json');
 if(fs.existsSync(af)){const d=JSON.parse(fs.readFileSync(af,'utf8'));anim=`window.CUSTOM_ANIMS=${JSON.stringify(d.animations||d)};`;}
 const assetsJs=`window.ASSETS=${JSON.stringify(assets)};${anim}window.DEFAULT_CFG=${JSON.stringify({names:cfg.names,lang:cfg.lang})};`;
 fs.mkdirSync(path.join(root,'docs'),{recursive:true});
-const game=fs.readFileSync(path.join(root,'src/game.html'),'utf8').replace('__ASSETS__',assetsJs).replace('__RIG__',rig);
+const game=fs.readFileSync(path.join(root,'src/game.html'),'utf8').replace('__ASSETS__',()=>assetsJs).replace('__RIG__',()=>rig);
 fs.writeFileSync(path.join(root,'docs/index.html'),game);
-fs.writeFileSync(path.join(root,'docs/studio.html'),fs.readFileSync(path.join(root,'src/studio.html'),'utf8').replace('__RIG__',rig));
+fs.writeFileSync(path.join(root,'docs/studio.html'),fs.readFileSync(path.join(root,'src/studio.html'),'utf8').replace('__RIG__',()=>rig));
 for(const f of ['manifest.webmanifest','icon.png'])if(fs.existsSync(path.join(root,f)))fs.copyFileSync(path.join(root,f),path.join(root,'docs',f));
 const mb=(fs.statSync(path.join(root,'docs/index.html')).size/1e6).toFixed(2);
 console.log(`docs/index.html ${mb} MB — ${Object.keys(assets.sounds).length} sounds, ${Object.keys(assets.voice).length}/${phrases.length} voice clips baked`);
