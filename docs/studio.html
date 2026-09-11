@@ -395,7 +395,9 @@ function makeDefaultLib(){
     slap_fart_launch:A(8,[F(3,{...crouch,eyes:1,torso:{r:6},head:{r:6}}),F(2,{root:{y:-30},...armsUp,mouth:4,lThigh:{r:30},rThigh:{r:-30}},'fart'),
       F(2,{root:{y:-75},...armsUp,mouth:4,torso:{r:15},lThigh:{r:-30},rThigh:{r:30}}),F(2,{root:{y:-95},...armsUp,mouth:4,torso:{r:-15},lThigh:{r:30},rThigh:{r:-30},hat:{y:-20,r:30}}),
       F(2,{root:{y:-60},...armsUp,mouth:1,torso:{r:10},hat:{y:-40,r:60}}),F(2,{root:{y:-20},mouth:1,eyes:1,hat:{y:-20,r:30}}),F(2,{...crouch,eyes:1},'thud'),F(3,base)]),
-    slap_headspin:A(8,[F(1,{head:{r:0},mouth:4},'spin'),F(1,{head:{r:90},mouth:4}),F(1,{head:{r:180},mouth:4}),F(1,{head:{r:-90},mouth:4}),F(1,{head:{r:0},mouth:4}),
+    // ball flies in from the right during the first frame (500 ms), bonks him, then the head spins
+    slap_headspin:A(8,[F(4,{mouth:1,lIris:{x:3},rIris:{x:3}},'','ball'),
+      F(1,{head:{r:0},mouth:4,eyes:2},'bonk'),F(1,{head:{r:90},mouth:4},'spin'),F(1,{head:{r:180},mouth:4}),F(1,{head:{r:-90},mouth:4}),F(1,{head:{r:0},mouth:4}),
       F(1,{head:{r:90},mouth:4}),F(1,{head:{r:180},mouth:4}),F(1,{head:{r:-90},mouth:4}),F(2,{head:{r:10},mouth:1,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
     slap_faceplant:A(8,[F(2,{torso:{r:15},head:{r:10},mouth:1}),F(1,{torso:{r:45},root:{y:10},lUpper:{r:-90},rUpper:{r:-90},mouth:4}),
       F(2,{...flat(1),lUpper:{r:-90},rUpper:{r:-90},lThigh:{r:-10},rThigh:{r:10},mouth:4,eyes:3},'thud'),
@@ -419,6 +421,12 @@ function makeDefaultLib(){
     mild_shrug:A(6,[F(3,{lUpper:{r:-70},rUpper:{r:70},lLower:{r:-60},rLower:{r:60},head:{r:8},mouth:1,torso:{y:-2}}),F(3,{lUpper:{r:-70},rUpper:{r:70},lLower:{r:-60},rLower:{r:60},head:{r:-8},mouth:0,torso:{y:-2}}),F(2,base)]),
     mild_confused:A(5,[F(3,{head:{r:-12},lIris:{x:-3},rIris:{x:5},mouth:1}),F(3,{head:{r:12},lIris:{x:4},rIris:{x:-4},mouth:2}),F(2,{head:{r:0},eyes:1}),F(2,base)]),
     mild_scratch_head:A(6,[F(3,{rUpper:{r:-160},rLower:{r:-50},head:{r:-6},mouth:1}),F(2,{rUpper:{r:-160},rLower:{r:-70},head:{r:-6},mouth:1}),F(2,{rUpper:{r:-160},rLower:{r:-50},head:{r:-6},mouth:0}),F(2,base)]),
+    // poke on the belly: quick surprised toot
+    tap_belly:A(8,[F(1,{torso:{y:3},mouth:1,eyes:0,lIris:{y:2},rIris:{y:2}}),F(1,{root:{y:-8,x:4},torso:{r:-10},head:{r:-6},lUpper:{r:-80},rUpper:{r:-60},mouth:4,eyes:2},'fart'),
+      F(2,{root:{y:-4,x:4},torso:{r:-8},head:{r:-4},lUpper:{r:-70},rUpper:{r:-50},mouth:4,eyes:2}),F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)]),
+    // poke on the head: dazed, stars circle the head, eyes squeezed
+    tap_head:A(8,[F(1,{head:{y:4},mouth:1},'bonk','headstars'),F(3,{head:{r:-14},mouth:1,eyes:2}),F(3,{head:{r:12},mouth:1,eyes:2}),F(3,{head:{r:-8},mouth:2,eyes:2}),
+      F(2,{head:{r:0},mouth:0,eyes:0,lIris:{x:-5},rIris:{x:5}}),F(2,base)]),
     count_hop:A(8,[F(1,crouch),F(2,{root:{y:-35},rUpper:{r:-170},rLower:{r:0},mouth:1},'boing'),F(1,{root:{y:-10},rUpper:{r:-170},rLower:{r:0}}),F(1,{...crouch,rUpper:{r:-170},rLower:{r:0}})]),
   };
 }
