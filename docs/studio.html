@@ -180,7 +180,7 @@ const SHAPES={
     t.append(el('ellipse',{cx:0,cy:-22,rx:46,ry:44,fill:'#f2c9a0',...OUT}));
     t.append(el('path',{d:'M-46,-28 Q-40,-64 0,-66 Q40,-64 46,-28 Q30,-54 0,-52 Q-30,-54 -46,-28 Z',fill:'#5a3a1e',...OUT}));
     g.append(t);
-    for(const s of[-1,1])g.append(el('ellipse',{cx:s*12,cy:-30,rx:9,ry:11,fill:'#fff',...OUT}));},
+    for(const s of[-1,1])g.append(el('ellipse',{class:'eyewhite',cx:s*12,cy:-30,rx:9,ry:11,fill:'#fff',...OUT}));},
   lIris:g=>g.append(el('circle',{cx:0,cy:0,r:2.8,fill:'#2b2622'})),
   rIris:g=>g.append(el('circle',{cx:0,cy:0,r:2.8,fill:'#2b2622'})),
   hat(g){g.append(el('path',{d:'M-30,8 Q-30,-14 0,-16 Q30,-14 30,8 Z',fill:'#2f7d3a',...OUT}));
@@ -204,15 +204,19 @@ function buildRig(container){
   const xx=el('g',{class:'xx'});
   for(const s of[-1,1]){xx.append(el('path',{d:`M${s*12-7},-37 L${s*12+7},-23 M${s*12+7},-37 L${s*12-7},-23`,fill:'none',stroke:'#2b2622','stroke-width':3.5,'stroke-linecap':'round'}));}
   groups.top.insertBefore(xx,groups.hat);groups.xx=xx;
+  groups.eyewhites=[...groups.top.querySelectorAll('.eyewhite')];
   return groups;
 }
 function applyPose(groups,pose){
   for(const id of ORDER){const j=R[id];let p=pose[id]||{x:0,y:0,r:0};
     if(id==='top'){const m=MOUTH[pose.mouth||0];p={x:m[0],y:m[1],r:m[2]};}
     groups[id].setAttribute('transform',`translate(${j.px+p.x},${j.py+p.y}) rotate(${p.r})`);}
-  groups.lids.style.display=pose.eyes?'':'none';
+  const marks=pose.eyes>=2;
+  groups.lids.style.display=pose.eyes===1?'':'none';
   groups.squint.style.display=pose.eyes===2?'':'none';
   groups.xx.style.display=pose.eyes===3?'':'none';
+  groups.eyewhites.forEach(e=>e.style.display=marks?'none':'');
+  groups.lIris.style.display=groups.rIris.style.display=marks?'none':'';
 }
 function createDoll(container){const groups=buildRig(container);const d={groups,pose:defaultPose(),apply(){applyPose(groups,d.pose);},set(p){d.pose=clone(p);d.apply();}};d.apply();return d;}
 
@@ -302,15 +306,16 @@ async function voiceUrl(text,lang){const k=lang+':'+text;if(VOICE.cache[k]!==und
   if(!url){const a=new Audio(VOICE.cfg.base+lang.slice(0,2)+'/'+slug(text)+'.mp3');
     url=await new Promise(r=>{a.addEventListener('canplaythrough',()=>r(a.src),{once:true});a.addEventListener('error',()=>r(null),{once:true});a.load();});}
   VOICE.cache[k]=url;return url;}
+function stopSpeech(){const f=VOICE.stopFn;VOICE.stopFn=null;if(f)f();}
 function speak(text,doll,{lang='nl-NL',done}={}){
   const chars=[...text];let i=0,ended=false,mouthT;
   const startMouth=()=>{mouthT=setInterval(()=>{doll.pose.mouth=i<chars.length?mouthForChar(chars[i++]):0;doll.apply();},95/VOICE.cfg.rate);};
-  const finish=()=>{if(ended)return;ended=true;clearInterval(mouthT);doll.pose.mouth=0;doll.apply();done&&done();};
+  const finish=()=>{if(ended)return;ended=true;VOICE.stopFn=null;clearInterval(mouthT);doll.pose.mouth=0;doll.apply();done&&done();};
   voiceUrl(text,lang).then(url=>{
-    if(url){const a=new Audio(url);a.preservesPitch=false;a.mozPreservesPitch=false;a.playbackRate=VOICE.cfg.rate;a.onended=finish;a.onerror=finish;
+    if(url){const a=new Audio(url);a.preservesPitch=false;a.mozPreservesPitch=false;a.playbackRate=VOICE.cfg.rate;a.onended=finish;a.onerror=finish;VOICE.stopFn=()=>{try{a.pause();}catch(e){}finish();};
       a.play().then(startMouth).catch(finish);setTimeout(finish,chars.length*200+3000);return;}
     if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=0.95;u.pitch=1.8;u.onend=finish;u.onerror=finish;
-      speechSynthesis.cancel();speechSynthesis.speak(u);startMouth();setTimeout(finish,chars.length*150+1500);}
+      speechSynthesis.cancel();speechSynthesis.speak(u);startMouth();VOICE.stopFn=()=>{speechSynthesis.cancel();finish();};setTimeout(finish,chars.length*150+1500);}
     else{startMouth();setTimeout(finish,chars.length*95+200);}
   });
 }
