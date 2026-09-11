@@ -313,7 +313,7 @@ const SFX=(()=>{
     kiekeboe:()=>{sweep('square',500,700,0.12,0.15);sweep('square',600,450,0.25,0.15,0.2);},
     mmm:()=>sweep('sine',220,260,0.5,0.2),
     ohnee:()=>sweep('sine',400,220,0.6,0.2),
-    disco:()=>{}, jig:()=>{},   // music: mp3 only, silent without one
+    disco:()=>{}, jig:()=>{}, party:()=>{},   // music: mp3 only, silent without one
   };
   const files={};let base='sounds/';
   const baked=()=>(window.ASSETS&&window.ASSETS.sounds)||{};
@@ -478,12 +478,22 @@ function makeDefaultLib(){
         F(3,{...arms,mouth:1,eyes:0,lIris:{x:4},rIris:{x:4}}),F(3,{...bum,mouth:0,eyes:1}),
         F(1,{...bum,mouth:4,eyes:2},'fart'),...SH(4,{...bum,mouth:4,eyes:2,hat:{y:-10,r:10}},'whoosh','flame',3),F(3,{...bum,mouth:1,eyes:2}),
         F(2,{mouth:1,eyes:0,lIris:{x:-4},rIris:{x:4}}),F(2,base)],{props:['torchL','torchR']});})(),
-    // party: flags in both hands (arms in a V, flags upright), party hat, confetti; horn, hops, waving
-    slap_party:(()=>{const wave=d=>({lUpper:{r:150+15*d},lLower:{r:0},lHand:{r:-150-5*d},rUpper:{r:-150-15*d},rLower:{r:0},rHand:{r:150+5*d}});   // hand r keeps the stick upright, minus a little tilt
+    // party finale (10 s): horn + confetti, marching hops, two headspins, a horn salvo, a big jump with the hat flying, laughing on the knees
+    dance_party:(()=>{const wave=d=>({lUpper:{r:150+15*d},lLower:{r:0},lHand:{r:-150-5*d},rUpper:{r:-150-15*d},rLower:{r:0},rHand:{r:150+5*d}});   // hand r keeps the stick upright, minus a little tilt
       const hop=(i,d)=>({...wave(d),root:{y:i%2?-16:0},torso:{r:5*d},head:{r:-4*d},hat:{y:i%2?-6:0},mouth:i%2?4:1,eyes:0});
-      return A(8,[F(2,{...wave(1),mouth:4,eyes:0},'horn','confetti'),F(2,{...wave(-1),mouth:4}),
-        ...Array.from({length:12},(_,i)=>F(1,hop(i,i%4<2?1:-1),i%4===0?'pop':'')),
-        F(2,{...wave(1),mouth:4,root:{y:-4}},'horn'),F(2,{...wave(-1),mouth:4}),F(2,{...wave(1),mouth:1,eyes:1}),F(2,base)],{props:['flagL','flagR','partyHat']});})(),
+      const kneel={lThigh:{r:20},rThigh:{r:-20},lShin:{r:-35},rShin:{r:35}};
+      const straight={lUpper:{r:175},rUpper:{r:-175},lLower:{r:0},rLower:{r:0},lHand:{r:-175},rHand:{r:175}};   // both flags straight up
+      return seq(8,80,i=>{const d=i%4<2?1:-1;
+        if(i<16)return {...wave(d),root:{y:i%2?-4:0},mouth:4,eyes:0,sound:i%8===0?'horn':'',fx:i%8===0?'confetti':''};            // opening: two horns
+        if(i<40)return {...hop(i,d),sound:i%4===0?'pop':''};                                                                     // marching hops
+        if(i<56){const ph=(i-40)%8;if(ph<4)return {...straight,head:{r:[0,90,180,-90][ph]},mouth:4,eyes:0,sound:ph===0?'spin':''};return hop(i,d);}   // headspin, hop, headspin, hop
+        if(i<68){const t=(i-56)%4;return {...wave(t<2?1:-1),root:{y:t===0?-8:0},torso:{r:t===0?-6:0},mouth:4,eyes:0,sound:t===0?'horn':'',fx:t===0?'confetti':''};}   // salvo: three horns, half a second apart
+        const f=i-68;
+        if(f<2)return {...wave(1),...kneel,root:{y:6},mouth:1,eyes:0};                                                          // wind up
+        if(f<5)return {...straight,root:{y:[-34,-44,-30][f-2]},hat:{y:[-30,-46,-24][f-2]},mouth:4,eyes:0,sound:f===2?'boing':''};   // jump, hat flies higher
+        if(f<8)return {...wave(-1),...kneel,root:{y:8},hat:{y:f===5?-10:0},mouth:4,eyes:2,sound:f===5?'plof':''};               // landing on the knees
+        return {...wave(f%2?1:-1),mouth:4,eyes:f<11?1:0};                                                                        // laughing, flags up
+      },{music:'party',props:['flagL','flagR','partyHat']});})(),
     // kiekeboe: hands over the eyes, a peek with one hand, big reveal, hide again, then the reveal with the hat jumping up
     slap_peekaboo:(()=>{const hide={lUpper:{r:-115},lLower:{r:-85},rUpper:{r:115},rLower:{r:85},mouth:0,eyes:1};
       const peek={...hide,lUpper:{r:-95},lLower:{r:-95},eyes:0,lIris:{x:-4},rIris:{x:-4}};

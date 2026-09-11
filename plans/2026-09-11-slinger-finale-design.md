@@ -11,7 +11,7 @@ Bewust niet: geen getal, geen "nog drie te gaan", geen verschillende feestjes pe
 ## 1. Slinger (src/game.html)
 
 - Nieuwe SVG-groep `slinger`, direct na de lucht-rects en vóór `target`, dus achter alles getekend.
-- Touw: kwadratische boog van (-10, 102) via (180, 150) naar (370, 102), inktkleur, 3 px.
+- Touw: kwadratische boog van (-10, 102) via (180, 160) naar (370, 102), inktkleur, 3 px (laagste punt in het midden op y 131, zodat de vlaggetjes van 26 px vrij blijven van de hoed op y 160).
 - 10 vlaggetjes op het touw (parameter t van 0,05 tot 0,95), driehoek 24 breed en 26 hoog, hangend naar beneden, wit met de inktrand (uitgeknipt-papier stijl). Gevuld = een van vijf kleuren: geel `#ffd400`, oranje `#ff7a00`, rood `#c8322b`, groen `#5ea24a`, blauw `#3a7bd5`.
 - De hoed van Terrance staat in rust op y 160, dus de slinger hangt net erboven. Bij sprongen gaat de hoed er gewoon voorlangs.
 
