@@ -44,6 +44,7 @@ const SFX={
   // dance music, same length as the dance (10 s at 8 fps x 80 frames)
   disco:   ['upbeat funky 70s disco groove, four on the floor drums, slap bass, wah guitar, cheerful, instrumental',10],
   jig:     ['fast irish jig, fiddle and tin whistle and bodhran, riverdance style, upbeat, instrumental',10],
+  party:   ['cheerful children\'s birthday party tune, polonaise march, accordion and brass band, hand claps, upbeat, instrumental',10],
 };
 // file name -> text spoken by the game's voice (short, in character)
 const YELPS={
